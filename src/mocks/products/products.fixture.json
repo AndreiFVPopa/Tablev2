@@ -1,0 +1,366 @@
+[
+  {
+    "id": "prd-001",
+    "title": "Căști wireless",
+    "sku": "SKU-1000",
+    "price": 29.99,
+    "stock": 0,
+    "category": "electronice",
+    "available": false,
+    "listedAt": "2022-01-10",
+    "tags": ["promo"],
+    "supplier": {
+      "name": "TechRO",
+      "country": "România"
+    },
+    "discontinuedAt": "2025-01-01"
+  },
+  {
+    "id": "prd-002",
+    "title": "Hanorac unisex",
+    "sku": "SKU-1001",
+    "price": 47.49,
+    "stock": 3,
+    "category": "îmbrăcăminte",
+    "available": true,
+    "listedAt": "2023-02-10",
+    "tags": ["nou"],
+    "supplier": {
+      "name": "ModaEst",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-003",
+    "title": "Lampă de birou",
+    "sku": "SKU-1002",
+    "price": 64.99,
+    "stock": 6,
+    "category": "casă",
+    "available": true,
+    "listedAt": "2024-03-10",
+    "tags": ["eco"],
+    "supplier": {
+      "name": "CasaVerde",
+      "country": "Italia"
+    }
+  },
+  {
+    "id": "prd-004",
+    "title": "Mingea de fotbal",
+    "sku": "SKU-1003",
+    "price": 82.49,
+    "stock": 9,
+    "category": "sport",
+    "available": true,
+    "listedAt": "2022-04-10",
+    "tags": ["premium"],
+    "supplier": {
+      "name": "SportMax",
+      "country": "Germania"
+    }
+  },
+  {
+    "id": "prd-005",
+    "title": "Tabletă 10\"",
+    "sku": "SKU-1004",
+    "price": 99.99,
+    "stock": 12,
+    "category": "electronice",
+    "available": true,
+    "listedAt": "2023-05-10",
+    "tags": ["promo", "nou"],
+    "supplier": {
+      "name": "TechRO",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-006",
+    "title": "Blugi slim",
+    "sku": "SKU-1005",
+    "price": 117.49,
+    "stock": 15,
+    "category": "îmbrăcăminte",
+    "available": true,
+    "listedAt": "2024-06-10",
+    "tags": ["eco", "premium"],
+    "supplier": {
+      "name": "ModaEst",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-007",
+    "title": "Set lenjerie",
+    "sku": "SKU-1006",
+    "price": 134.99,
+    "stock": 18,
+    "category": "casă",
+    "available": false,
+    "listedAt": "2022-07-10",
+    "tags": [],
+    "supplier": {
+      "name": "CasaVerde",
+      "country": "Italia"
+    }
+  },
+  {
+    "id": "prd-008",
+    "title": "Rachetă tenis",
+    "sku": "SKU-1007",
+    "price": 152.49,
+    "stock": 21,
+    "category": "sport",
+    "available": true,
+    "listedAt": "2023-08-10",
+    "tags": ["nou", "premium"],
+    "supplier": {
+      "name": "SportMax",
+      "country": "Germania"
+    }
+  },
+  {
+    "id": "prd-009",
+    "title": "Boxă portabilă",
+    "sku": "SKU-1008",
+    "price": 169.99,
+    "stock": 24,
+    "category": "electronice",
+    "available": true,
+    "listedAt": "2024-01-10",
+    "tags": ["promo"],
+    "supplier": {
+      "name": "TechRO",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-010",
+    "title": "Tricou sport",
+    "sku": "SKU-1009",
+    "price": 187.49,
+    "stock": 27,
+    "category": "îmbrăcăminte",
+    "available": true,
+    "listedAt": "2022-02-10",
+    "tags": ["nou"],
+    "supplier": {
+      "name": "ModaEst",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-011",
+    "title": "Aspirator robot",
+    "sku": "SKU-1010",
+    "price": 204.99,
+    "stock": 30,
+    "category": "casă",
+    "available": true,
+    "listedAt": "2023-03-10",
+    "tags": ["eco"],
+    "supplier": {
+      "name": "CasaVerde",
+      "country": "Italia"
+    }
+  },
+  {
+    "id": "prd-012",
+    "title": "Bicicletă MTB",
+    "sku": "SKU-1011",
+    "price": 222.49,
+    "stock": 33,
+    "category": "sport",
+    "available": true,
+    "listedAt": "2024-04-10",
+    "tags": ["premium"],
+    "supplier": {
+      "name": "SportMax",
+      "country": "Germania"
+    },
+    "discontinuedAt": "2025-04-01"
+  },
+  {
+    "id": "prd-013",
+    "title": "Monitor 27\"",
+    "sku": "SKU-1012",
+    "price": 239.99,
+    "stock": 36,
+    "category": "electronice",
+    "available": false,
+    "listedAt": "2022-05-10",
+    "tags": ["promo", "nou"],
+    "supplier": {
+      "name": "TechRO",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-014",
+    "title": "Geacă impermeabilă",
+    "sku": "SKU-1013",
+    "price": 257.49,
+    "stock": 39,
+    "category": "îmbrăcăminte",
+    "available": true,
+    "listedAt": "2023-06-10",
+    "tags": ["eco", "premium"],
+    "supplier": {
+      "name": "ModaEst",
+      "country": "România"
+    },
+    "discontinuedAt": null
+  },
+  {
+    "id": "prd-015",
+    "title": "Cafetieră",
+    "sku": "SKU-1014",
+    "price": 274.99,
+    "stock": 2,
+    "category": "casă",
+    "available": true,
+    "listedAt": "2024-07-10",
+    "tags": [],
+    "supplier": {
+      "name": "CasaVerde",
+      "country": "Italia"
+    }
+  },
+  {
+    "id": "prd-016",
+    "title": "Saltea yoga",
+    "sku": "SKU-1015",
+    "price": 292.49,
+    "stock": 5,
+    "category": "sport",
+    "available": true,
+    "listedAt": "2022-08-10",
+    "tags": ["nou", "premium"],
+    "supplier": {
+      "name": "SportMax",
+      "country": "Germania"
+    }
+  },
+  {
+    "id": "prd-017",
+    "title": "Tastatură mecanică",
+    "sku": "SKU-1016",
+    "price": 309.99,
+    "stock": 8,
+    "category": "electronice",
+    "available": true,
+    "listedAt": "2023-01-10",
+    "tags": ["promo"],
+    "supplier": {
+      "name": "TechRO",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-018",
+    "title": "Sneakers alergare",
+    "sku": "SKU-1017",
+    "price": 327.49,
+    "stock": 11,
+    "category": "îmbrăcăminte",
+    "available": true,
+    "listedAt": "2024-02-10",
+    "tags": ["nou"],
+    "supplier": {
+      "name": "ModaEst",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-019",
+    "title": "Fier de călcat",
+    "sku": "SKU-1018",
+    "price": 344.99,
+    "stock": 14,
+    "category": "casă",
+    "available": false,
+    "listedAt": "2022-03-10",
+    "tags": ["eco"],
+    "supplier": {
+      "name": "CasaVerde",
+      "country": "Italia"
+    }
+  },
+  {
+    "id": "prd-020",
+    "title": "Gantere 2x5kg",
+    "sku": "SKU-1019",
+    "price": 362.49,
+    "stock": 17,
+    "category": "sport",
+    "available": true,
+    "listedAt": "2023-04-10",
+    "tags": ["premium"],
+    "supplier": {
+      "name": "SportMax",
+      "country": "Germania"
+    }
+  },
+  {
+    "id": "prd-021",
+    "title": "Router Wi-Fi",
+    "sku": "SKU-1020",
+    "price": 379.99,
+    "stock": 20,
+    "category": "electronice",
+    "available": true,
+    "listedAt": "2024-05-10",
+    "tags": ["promo", "nou"],
+    "supplier": {
+      "name": "TechRO",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-022",
+    "title": "Rochie casual",
+    "sku": "SKU-1021",
+    "price": 397.49,
+    "stock": 23,
+    "category": "îmbrăcăminte",
+    "available": true,
+    "listedAt": "2022-06-10",
+    "tags": ["eco", "premium"],
+    "supplier": {
+      "name": "ModaEst",
+      "country": "România"
+    }
+  },
+  {
+    "id": "prd-023",
+    "title": "Cană termică",
+    "sku": "SKU-1022",
+    "price": 414.99,
+    "stock": 26,
+    "category": "casă",
+    "available": true,
+    "listedAt": "2023-07-10",
+    "tags": [],
+    "supplier": {
+      "name": "CasaVerde",
+      "country": "Italia"
+    },
+    "discontinuedAt": "2025-07-01"
+  },
+  {
+    "id": "prd-024",
+    "title": "Costum de baie",
+    "sku": "SKU-1023",
+    "price": 432.49,
+    "stock": 29,
+    "category": "sport",
+    "available": true,
+    "listedAt": "2024-08-10",
+    "tags": ["nou", "premium"],
+    "supplier": {
+      "name": "SportMax",
+      "country": "Germania"
+    }
+  }
+]

@@ -1,0 +1,97 @@
+{
+  "name": "schema-driven-table",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@12.18.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "stylelint": "stylelint \"src/**/*.{scss,css}\"",
+    "stylelint:fix": "stylelint \"src/**/*.{scss,css}\" --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "e2e": "playwright test",
+    "e2e:install": "playwright install --with-deps",
+    "fallow:arch": "fallow architecture --format json --quiet --fail-on-issues",
+    "fallow:health": "fallow health --format json --quiet --fail-on-issues",
+    "fallow:dead": "fallow dead-code --format json --quiet --fail-on-issues",
+    "fallow:audit": "fallow audit --format json --quiet",
+    "quality": "pnpm run typecheck && pnpm run lint && pnpm run stylelint && pnpm run format:check && pnpm run fallow:arch && pnpm run fallow:dead && pnpm run fallow:health && pnpm run test:cov && pnpm run build && pnpm run e2e",
+    "quality:local": "pnpm run typecheck && pnpm run lint && pnpm run stylelint && pnpm run format:check && pnpm run fallow:arch && pnpm run test",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.107.1",
+    "@tanstack/react-router": "1.170.46",
+    "@tanstack/react-table": "9.3.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.65.0",
+    "@tanstack/router-plugin": "1.169.0",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.10",
+    "@types/node": "^24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "@vitest/coverage-v8": "5.1.0",
+    "eslint": "9.39.5",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import-x": "4.18.1",
+    "eslint-plugin-jsx-a11y": "6.10.2",
+    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-sonarjs": "4.2.2",
+    "fallow": "3.42.0",
+    "globals": "17.14.0",
+    "husky": "9.1.7",
+    "jiti": "^2.7.0",
+    "jsdom": "31.0.1",
+    "lint-staged": "17.6.0",
+    "postcss": "^8.5.32",
+    "postcss-scss": "^4.0.9",
+    "prettier": "3.10.1",
+    "sass": "1.108.2",
+    "stylelint": "18.0.0",
+    "stylelint-config-standard-scss": "18.0.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild"
+    ]
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{scss,css}": [
+      "stylelint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}

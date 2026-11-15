@@ -1,0 +1,64 @@
+$border: #c7cbd1;
+$muted: #6b7280;
+$focus: #4a7cff;
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pageSizeGroup label {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pageSizeSelect {
+  padding: 0.15rem 0.25rem;
+  font: inherit;
+  border: 1px solid $border;
+  border-radius: 4px;
+  background: #fff;
+
+  &:focus-visible {
+    outline: 2px solid $focus;
+    outline-offset: 1px;
+  }
+}
+
+.summary {
+  color: $muted;
+  font-variant-numeric: tabular-nums;
+}
+
+.pageControls {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+
+  button {
+    min-width: 2rem;
+    padding: 0.2rem 0.5rem;
+    background: #fff;
+    border: 1px solid $border;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid $focus;
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+}
+
+.pageOf {
+  font-variant-numeric: tabular-nums;
+}

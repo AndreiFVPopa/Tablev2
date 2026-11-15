@@ -1,0 +1,129 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "minimumVersion": "3.42.0",
+
+  "ignorePatterns": ["src/app/routeTree.gen.ts"],
+
+  // Packages referenced by name only (no static import). Remove an entry once
+  // Fallow can resolve the reference from source.
+  //   - eslint-import-resolver-typescript: eslint.config.ts settings.import-x/resolver
+  "ignoreDependencies": ["eslint-import-resolver-typescript"],
+
+  "boundaries": {
+    "zones": [
+      { "name": "app", "patterns": ["src/app/**", "src/main.tsx"] },
+      { "name": "table", "patterns": ["src/table/**"] },
+      { "name": "shared", "patterns": ["src/shared/**"] },
+      { "name": "students", "patterns": ["src/features/students/**"] },
+      { "name": "products", "patterns": ["src/features/products/**"] },
+      { "name": "mocks", "patterns": ["src/mocks/**"] },
+      { "name": "types", "patterns": ["src/types/**", "src/vite-env.d.ts"] },
+      {
+        "name": "tests",
+        "patterns": [
+          "src/**/*.test.ts",
+          "src/**/*.test.tsx",
+          "src/**/*.spec.ts",
+          "src/**/*.spec.tsx",
+        ],
+      },
+      { "name": "e2e", "patterns": ["e2e/**"] },
+    ],
+    "rules": [
+      { "from": "table", "allow": [], "allowTypeOnly": ["types"] },
+      { "from": "shared", "allow": ["table"], "allowTypeOnly": ["types"] },
+      {
+        "from": "students",
+        "allow": ["table", "shared", "mocks"],
+        "allowTypeOnly": ["types"],
+      },
+      {
+        "from": "products",
+        "allow": ["table", "shared", "mocks"],
+        "allowTypeOnly": ["types"],
+      },
+      {
+        "from": "app",
+        "allow": ["table", "shared", "students", "products"],
+        "allowTypeOnly": ["types"],
+      },
+      {
+        "from": "mocks",
+        "allow": ["table", "shared", "students", "products"],
+        "allowTypeOnly": ["types"],
+      },
+      { "from": "types", "allow": [] },
+      {
+        "from": "tests",
+        "allow": ["table", "shared", "students", "products", "app", "mocks"],
+        "allowTypeOnly": ["types"],
+      },
+      { "from": "e2e", "allow": [] },
+    ],
+    "coverage": {
+      "requireAllFiles": true,
+      "allowUnmatched": [
+        "index.html",
+        "vite.config.ts",
+        "vitest.config.ts",
+        "playwright.config.ts",
+        "eslint.config.ts",
+        "stylelint.config.js",
+        "vitest.setup.ts",
+      ],
+    },
+    "calls": {
+      "forbidden": [
+        { "from": "table", "callee": "fetch" },
+        { "from": "students", "callee": "fetch" },
+        { "from": "products", "callee": "fetch" },
+      ],
+    },
+  },
+
+  "health": {
+    "maxCyclomatic": 15,
+    "maxCognitive": 15,
+    "maxCrap": 30.0,
+    "maxUnitSize": 80,
+    "ignore": [
+      "src/app/routeTree.gen.ts",
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx",
+      "src/**/*.spec.ts",
+      "src/**/*.spec.tsx",
+    ],
+  },
+
+  "rules": {
+    "boundary-violation": "error",
+    "circular-dependencies": "error",
+    "complexity-cyclomatic": "error",
+    "complexity-cognitive": "error",
+    "complexity-crap": "error",
+    "complexity-file-lines": "warn",
+    "unused-files": "error",
+    "unused-exports": "error",
+    "unused-types": "error",
+    "unused-dependencies": "error",
+    "unused-dev-dependencies": "warn",
+    "unused-component-props": "error",
+    "unresolved-imports": "error",
+    "unlisted-dependencies": "error",
+    "policy-violation": "off",
+    "prop-drilling": "warn",
+    "thin-wrapper": "warn",
+    "duplicate-prop-shape": "warn",
+    "absent-component-props": "warn",
+    "private-type-leaks": "error",
+    "coverage-gaps": "warn",
+    "css-token-drift": "warn",
+    "css-duplicate-block": "warn",
+    "css-selector-complexity": "warn",
+    "require-suppression-reason": "error",
+    "stale-suppressions": "error",
+    "weakened-tests": "error",
+    "added-suppression": "error",
+    "test-only-branch": "error",
+  },
+}

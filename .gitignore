@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+.cache
+.fallow
+.DS_Store
+*.log
+playwright-report
+test-results
+.cursor/
+.tanstack/
+*.tsbuildinfo
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+src/app/routeTree.gen.ts

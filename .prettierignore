@@ -1,0 +1,9 @@
+dist
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+node_modules
+.cache
+.fallow
+src/app/routeTree.gen.ts

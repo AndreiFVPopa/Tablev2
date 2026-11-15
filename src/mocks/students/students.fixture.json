@@ -1,0 +1,384 @@
+[
+  {
+    "id": "stu-001",
+    "name": "Ana Pop",
+    "email": "ana.1@liceu.ro",
+    "age": 10,
+    "grade": "V",
+    "active": false,
+    "enrolledAt": "2020-01-15",
+    "gpa": null,
+    "tags": ["bursă"],
+    "address": {
+      "city": "Cluj-Napoca",
+      "county": "Cluj"
+    },
+    "notes": null
+  },
+  {
+    "id": "stu-002",
+    "name": "Bogdan Ionescu",
+    "email": "bogdan.2@liceu.ro",
+    "age": 11,
+    "grade": "VI",
+    "active": true,
+    "enrolledAt": "2021-02-15",
+    "gpa": 5.1,
+    "tags": ["olimpic"],
+    "address": {
+      "city": "Sibiu",
+      "county": "Sibiu"
+    },
+    "notes": "Observație 2"
+  },
+  {
+    "id": "stu-003",
+    "name": "Carla Marin",
+    "email": "carla.3@liceu.ro",
+    "age": 12,
+    "grade": "VII",
+    "active": true,
+    "enrolledAt": "2022-03-15",
+    "gpa": 5.2,
+    "tags": ["transfer"],
+    "address": {
+      "city": "Brașov",
+      "county": "Brașov"
+    },
+    "notes": "Observație 3"
+  },
+  {
+    "id": "stu-004",
+    "name": "Dan Radu",
+    "email": "dan.4@liceu.ro",
+    "age": 13,
+    "grade": "VIII",
+    "active": true,
+    "enrolledAt": "2023-04-15",
+    "gpa": 5.3,
+    "tags": ["repetent"],
+    "address": {
+      "city": "Timișoara",
+      "county": "Timiș"
+    },
+    "notes": "Observație 4"
+  },
+  {
+    "id": "stu-005",
+    "name": "Elena Stoica",
+    "email": "elena.5@liceu.ro",
+    "age": 14,
+    "grade": "IX",
+    "active": true,
+    "enrolledAt": "2020-05-15",
+    "gpa": 5.4,
+    "tags": ["bursă", "olimpic"],
+    "address": {
+      "city": "Iași",
+      "county": "Iași"
+    },
+    "notes": null
+  },
+  {
+    "id": "stu-006",
+    "name": "Florin Georgescu",
+    "email": "florin.6@liceu.ro",
+    "age": 15,
+    "grade": "X",
+    "active": false,
+    "enrolledAt": "2021-06-15",
+    "gpa": 5.5,
+    "tags": ["transfer", "bursă"],
+    "address": {
+      "city": "Oradea",
+      "county": "Bihor"
+    },
+    "notes": "Observație 6"
+  },
+  {
+    "id": "stu-007",
+    "name": "Gina Preda",
+    "email": "gina.7@liceu.ro",
+    "age": 16,
+    "grade": "XI",
+    "active": true,
+    "enrolledAt": "2022-07-15",
+    "gpa": 5.6,
+    "tags": [],
+    "address": {
+      "city": "Constanța",
+      "county": "Constanța"
+    }
+  },
+  {
+    "id": "stu-008",
+    "name": "Horia Nistor",
+    "email": "horia.8@liceu.ro",
+    "age": 17,
+    "grade": "XII",
+    "active": true,
+    "enrolledAt": "2023-08-15",
+    "gpa": null,
+    "tags": ["olimpic", "transfer"],
+    "address": {
+      "city": "Craiova",
+      "county": "Dolj"
+    },
+    "notes": "Observație 8"
+  },
+  {
+    "id": "stu-009",
+    "name": "Ioana Vasilescu",
+    "email": "ioana.9@liceu.ro",
+    "age": 18,
+    "grade": "V",
+    "active": true,
+    "enrolledAt": "2020-09-15",
+    "gpa": 5.8,
+    "tags": ["bursă"],
+    "address": {
+      "city": "Cluj-Napoca",
+      "county": "Cluj"
+    },
+    "notes": null
+  },
+  {
+    "id": "stu-010",
+    "name": "Julian Matei",
+    "email": "julian.10@liceu.ro",
+    "age": 19,
+    "grade": "VI",
+    "active": true,
+    "enrolledAt": "2021-01-15",
+    "gpa": 5.9,
+    "tags": ["olimpic"],
+    "address": {
+      "city": "Sibiu",
+      "county": "Sibiu"
+    },
+    "notes": "Observație 10"
+  },
+  {
+    "id": "stu-011",
+    "name": "Laura Dobre",
+    "email": "laura.11@liceu.ro",
+    "age": 20,
+    "grade": "VII",
+    "active": false,
+    "enrolledAt": "2022-02-15",
+    "gpa": 6,
+    "tags": ["transfer"],
+    "address": {
+      "city": "Brașov",
+      "county": "Brașov"
+    },
+    "notes": "Observație 11"
+  },
+  {
+    "id": "stu-012",
+    "name": "Mihai Enache",
+    "email": "mihai.12@liceu.ro",
+    "age": 10,
+    "grade": "VIII",
+    "active": true,
+    "enrolledAt": "2023-03-15",
+    "gpa": 6.1,
+    "tags": ["repetent"],
+    "address": {
+      "city": "Timișoara",
+      "county": "Timiș"
+    },
+    "notes": "Observație 12"
+  },
+  {
+    "id": "stu-013",
+    "name": "Nadia Ciobanu",
+    "email": "nadia.13@liceu.ro",
+    "age": 11,
+    "grade": "IX",
+    "active": true,
+    "enrolledAt": "2020-04-15",
+    "gpa": 6.2,
+    "tags": ["bursă", "olimpic"],
+    "address": {
+      "city": "Iași",
+      "county": "Iași"
+    },
+    "notes": null
+  },
+  {
+    "id": "stu-014",
+    "name": "Ovidiu Pavel",
+    "email": "ovidiu.14@liceu.ro",
+    "age": 12,
+    "grade": "X",
+    "active": true,
+    "enrolledAt": "2021-05-15",
+    "gpa": 6.3,
+    "tags": ["transfer", "bursă"],
+    "address": {
+      "city": "Oradea",
+      "county": "Bihor"
+    },
+    "notes": "Observație 14"
+  },
+  {
+    "id": "stu-015",
+    "name": "Paula Neagu",
+    "email": "paula.15@liceu.ro",
+    "age": 13,
+    "grade": "XI",
+    "active": true,
+    "enrolledAt": "2022-06-15",
+    "gpa": null,
+    "tags": [],
+    "address": {
+      "city": "Constanța",
+      "county": "Constanța"
+    },
+    "notes": "Observație 15"
+  },
+  {
+    "id": "stu-016",
+    "name": "Radu Munteanu",
+    "email": "radu.16@liceu.ro",
+    "age": 14,
+    "grade": "XII",
+    "active": false,
+    "enrolledAt": "2023-07-15",
+    "gpa": 6.5,
+    "tags": ["olimpic", "transfer"],
+    "address": {
+      "city": "Craiova",
+      "county": "Dolj"
+    },
+    "notes": "Observație 16"
+  },
+  {
+    "id": "stu-017",
+    "name": "Simona Diaconu",
+    "email": "simona.17@liceu.ro",
+    "age": 15,
+    "grade": "V",
+    "active": true,
+    "enrolledAt": "2020-08-15",
+    "gpa": 6.6,
+    "tags": ["bursă"],
+    "address": {
+      "city": "Cluj-Napoca",
+      "county": "Cluj"
+    },
+    "notes": null
+  },
+  {
+    "id": "stu-018",
+    "name": "Tudor Albu",
+    "email": "tudor.18@liceu.ro",
+    "age": 16,
+    "grade": "VI",
+    "active": true,
+    "enrolledAt": "2021-09-15",
+    "gpa": 6.7,
+    "tags": ["olimpic"],
+    "address": {
+      "city": "Sibiu",
+      "county": "Sibiu"
+    },
+    "notes": "Observație 18"
+  },
+  {
+    "id": "stu-019",
+    "name": "Ursula Banu",
+    "email": "ursula.19@liceu.ro",
+    "age": 17,
+    "grade": "VII",
+    "active": true,
+    "enrolledAt": "2022-01-15",
+    "gpa": 6.8,
+    "tags": ["transfer"],
+    "address": {
+      "city": "Brașov",
+      "county": "Brașov"
+    }
+  },
+  {
+    "id": "stu-020",
+    "name": "Vlad Cojocaru",
+    "email": "vlad.20@liceu.ro",
+    "age": 18,
+    "grade": "VIII",
+    "active": true,
+    "enrolledAt": "2023-02-15",
+    "gpa": 6.9,
+    "tags": ["repetent"],
+    "address": {
+      "city": "Timișoara",
+      "county": "Timiș"
+    },
+    "notes": "Observație 20"
+  },
+  {
+    "id": "stu-021",
+    "name": "Andreea Luca",
+    "email": "andreea.21@liceu.ro",
+    "age": 19,
+    "grade": "IX",
+    "active": false,
+    "enrolledAt": "2020-03-15",
+    "gpa": 7,
+    "tags": ["bursă", "olimpic"],
+    "address": {
+      "city": "Iași",
+      "county": "Iași"
+    },
+    "notes": null
+  },
+  {
+    "id": "stu-022",
+    "name": "Cristian Popa",
+    "email": "cristian.22@liceu.ro",
+    "age": 20,
+    "grade": "X",
+    "active": true,
+    "enrolledAt": "2021-04-15",
+    "gpa": null,
+    "tags": ["transfer", "bursă"],
+    "address": {
+      "city": "Oradea",
+      "county": "Bihor"
+    },
+    "notes": "Observație 22"
+  },
+  {
+    "id": "stu-023",
+    "name": "Diana Serban",
+    "email": "diana.23@liceu.ro",
+    "age": 10,
+    "grade": "XI",
+    "active": true,
+    "enrolledAt": "2022-05-15",
+    "gpa": 7.2,
+    "tags": [],
+    "address": {
+      "city": "Constanța",
+      "county": "Constanța"
+    },
+    "notes": "Observație 23"
+  },
+  {
+    "id": "stu-024",
+    "name": "Eduard Voicu",
+    "email": "eduard.24@liceu.ro",
+    "age": 11,
+    "grade": "XII",
+    "active": true,
+    "enrolledAt": "2023-06-15",
+    "gpa": 7.3,
+    "tags": ["olimpic", "transfer"],
+    "address": {
+      "city": "Craiova",
+      "county": "Dolj"
+    },
+    "notes": "Observație 24"
+  }
+]
