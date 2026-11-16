@@ -2,10 +2,11 @@ import { describe, it, expect } from "vitest";
 import { z } from "zod";
 
 import {
+  DIAGNOSTIC_CODES,
   FIELD_KINDS,
-  defaultFilterKind,
+  URL_VALUE_ENCODINGS,
   interpretSchema,
-  isSortableKind,
+  SchemaInterpretationError,
   type FieldDescriptor,
 } from "../index";
 function byPath(fields: readonly FieldDescriptor[], path: string): FieldDescriptor {
@@ -138,21 +139,46 @@ describe("interpretSchema — wrappers", () => {
     expect(nullish.nullable).toBe(true);
   });
 });
-describe("capability helpers", () => {
-  it("isSortableKind matches the specified ordering", () => {
-    expect(isSortableKind("text")).toBe(true);
-    expect(isSortableKind("numeric")).toBe(true);
-    expect(isSortableKind("date")).toBe(true);
-    expect(isSortableKind("boolean")).toBe(true);
-    expect(isSortableKind("enum")).toBe(true);
-    expect(isSortableKind("tags")).toBe(false);
+describe("interpretSchema — option URL encoding configuration", () => {
+  it("throws SchemaInterpretationError for positional encoding on tags without rewriting encoding", () => {
+    const schema = z.object({
+      tags: z.array(z.enum(["a", "b"])).meta({
+        table: { urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL },
+      }),
+    });
+    expect(() => interpretSchema(schema)).toThrow(SchemaInterpretationError);
+    try {
+      interpretSchema(schema);
+    } catch (error) {
+      expect(error).toBeInstanceOf(SchemaInterpretationError);
+      if (!(error instanceof SchemaInterpretationError)) return;
+      expect(error.diagnostics).toEqual([
+        expect.objectContaining({
+          code: DIAGNOSTIC_CODES.URL_VALUE_ENCODING_UNSUPPORTED,
+          path: "tags",
+        }),
+      ]);
+    }
   });
-  it("defaultFilterKind maps each kind to a documented family", () => {
-    expect(defaultFilterKind("text")).toBe("text-search");
-    expect(defaultFilterKind("numeric")).toBe("number-range");
-    expect(defaultFilterKind("boolean")).toBe("boolean-tri");
-    expect(defaultFilterKind("enum")).toBe("enum-select");
-    expect(defaultFilterKind("date")).toBe("date-range");
-    expect(defaultFilterKind("tags")).toBe("tags-multiselect");
+
+  it("throws SchemaInterpretationError on slug collisions without rewriting encoding", () => {
+    const schema = z.object({
+      label: z.enum(["bursă", "bursa"] as const).meta({
+        table: { urlValueEncoding: URL_VALUE_ENCODINGS.SLUG },
+      }),
+    });
+    expect(() => interpretSchema(schema)).toThrow(SchemaInterpretationError);
+    try {
+      interpretSchema(schema);
+    } catch (error) {
+      expect(error).toBeInstanceOf(SchemaInterpretationError);
+      if (!(error instanceof SchemaInterpretationError)) return;
+      expect(error.diagnostics).toEqual([
+        expect.objectContaining({
+          code: DIAGNOSTIC_CODES.URL_SLUG_COLLISION,
+          path: "label",
+        }),
+      ]);
+    }
   });
 });

@@ -1,4 +1,4 @@
-import styles from "../filters.module.scss";
+import styles from "../shared/filters.module.scss";
 
 import { BOOLEAN_FILTER_CHOICE } from "./boolean-filter-choice.constants";
 import { useBooleanFilter } from "./use-boolean-filter";

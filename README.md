@@ -92,6 +92,16 @@ Canonical URL keys always include `page`, `pageSize`, and `sort` (even at defaul
 
 Unsupported leaves emit diagnostics from `interpretSchema` rather than failing silently.
 
+### Enum / tag URL encodings
+
+Optional `table.urlValueEncoding` on Zod field metadata:
+
+- `canonical` (default)
+- `positional` — 1-based option index (`gen=1`); enum only; order-sensitive
+- `slug` — ASCII URL tokens (`bursă` → `bursa`); collisions need `urlSlugOverrides` or fall back to canonical
+
+Optional `table.urlParam` aliases the search key (`gender` field → `gen`). Optional `table.optionLabels` customize filter/cell display without changing canonical values. See `ARCHITECTURE.md`.
+
 ### Theme / design tokens
 
 Table styles ship their own portable token layer in `src/table/styles/tokens.scss` (`--table-color-*`, `--table-space-*`, `--table-radius-*`, …) applied on `:root` when the table styles load. Override those CSS variables in the host app when theming; do not wire the table to application-global SCSS variables.

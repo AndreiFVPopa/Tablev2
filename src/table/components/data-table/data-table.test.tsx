@@ -190,6 +190,18 @@ describe("DataTable sorting", () => {
     const firstCell = within(firstDataRow).getAllByRole("cell")[0]!;
     expect(firstCell.textContent).toBe("Ana");
   });
+  it("sorts booleans with false before true ascending", () => {
+    renderTable({ schema: PeopleSchema, data: PEOPLE });
+    fireEvent.click(screen.getByRole("button", { name: /Sortează Activ/i }));
+    const firstDataRow = screen.getAllByRole("row")[2]!;
+    expect(within(firstDataRow).getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
+  });
+  it("sorts dates chronologically ascending", () => {
+    renderTable({ schema: PeopleSchema, data: PEOPLE });
+    fireEvent.click(screen.getByRole("button", { name: /Sortează Înscris/i }));
+    const firstDataRow = screen.getAllByRole("row")[2]!;
+    expect(within(firstDataRow).getByRole("cell", { name: "Ana" })).toBeInTheDocument();
+  });
   it("does not expose a sort toggle for tag columns", () => {
     renderTable({ schema: PeopleSchema, data: PEOPLE });
     expect(screen.queryByRole("button", { name: /Sortează Etichete/i })).not.toBeInTheDocument();

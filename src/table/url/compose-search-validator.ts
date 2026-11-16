@@ -1,6 +1,7 @@
-import { canonicaliseSearch, stripTableKeys, type SearchRecord } from "./codec";
 import { resolveCodecOptions } from "./resolve-codec-options";
+import { canonicaliseSearch, stripTableKeys } from "./search-canonical";
 
+import type { SearchRecord } from "./codec.types";
 import type { ComposeTableSearchValidatorOptions } from "./compose-search-validator.types";
 import type { z } from "zod";
 

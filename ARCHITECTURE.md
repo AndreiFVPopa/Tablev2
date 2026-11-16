@@ -132,6 +132,42 @@ Phase 1 shipped the shell and directory policy. Phase 2 shipped the pure schema 
 - The Elevi page renders `<DataTable schema={studentSchema} data={studentsDataset} />` with no loading or network-error UI.
 - Routes under `src/app/routes/` plug `composeTableSearchValidator(schema)` into `validateSearch`. `/` redirects to `/elevi`.
 
+## URL value encodings (enum / tags)
+
+Canonical dataset values, display labels, and URL tokens are separate:
+
+| Layer          | Example                             |
+| -------------- | ----------------------------------- |
+| Canonical data | `gender: "male"`, `tags: ["bursă"]` |
+| Display label  | `Masculin`, `bursă`                 |
+| URL token      | `gen=1`, `tags=bursa`               |
+
+Configure via Zod `table` metadata (no Students-specific codec branches):
+
+```ts
+z.enum(["male", "female"]).meta({
+  title: "Gen",
+  table: {
+    urlParam: "gen",
+    urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL,
+    optionLabels: { male: "Masculin", female: "Feminin" },
+  },
+});
+
+z.array(z.enum(["bursă", "olimpic"])).meta({
+  title: "Etichete",
+  table: { urlValueEncoding: URL_VALUE_ENCODINGS.SLUG },
+});
+```
+
+Strategies (`URL_VALUE_ENCODINGS`):
+
+- `canonical` (default) — URL token equals the option string.
+- `positional` — 1-based index of the schema option order (`male` → `1`). Opt-in; enum only. Order changes change shared URLs. Preferred for short binary enums; not a boolean type.
+- `slug` — ASCII slug from Unicode NFD normalization + diacritic stripping (`bursă` → `bursa`). Collisions emit a diagnostic and force canonical encoding unless `urlSlugOverrides` resolves them — never a half-applied slug map.
+
+Invalid tokens are dropped (no crash). TanStack filter state always stores canonical values. Controlled mode does not require encoding configuration.
+
 ## Portability and URL authority (Phase 6)
 
 - `src/table/` must remain copy-paste portable. Accepted peers: `react`, `@tanstack/react-table`, `@tanstack/react-router`, `zod` (+ SCSS Modules). No `@tanstack/react-query`, HTTP clients, or fixture imports.
@@ -190,7 +226,7 @@ When Zod ships a public replacement (or we are explicitly approved to consume `_
 
 - **TanStack Table v9 (plugin API).** The project pins `@tanstack/react-table@^9.3.1`, whose `tableFeatures({...})` helper replaces v8's row-model getters. All features and row models are registered once in `src/table/lib/table-features.ts` as `TABLE_FEATURES`; every column, filter function, and sort function is typed against `TableFeaturesConfig`. The component calls `useTable({ features: TABLE_FEATURES, ... })`.
 - **Columns derive from descriptors.** `src/table/lib/column-factory.tsx` is the single bridge between the Phase-2 interpreter and the table engine. Each column gets `accessorFn = getValueAtPath(row, descriptor.segments)`, a kind-dispatched `cell` renderer (`FormattedCell → formatValue`), the right `filterFn`, and a kind-dispatched `sortFn`. `isSortableKind(descriptor.kind)` drives `enableSorting`, so tag columns have no sort control. All kinds use ascending-first (`sortDescFirst: false`) for consistent UX.
-- **Pure where practical.** `src/table/lib/format-value.ts`, `src/table/lib/get-value-at-path.ts`, and `src/table/filters/filter-functions.ts` are pure modules with no React or DOM dependency; each is tested as a pure function and then wrapped by thin React adapters.
+- **Pure where practical.** `src/table/lib/format-value.ts`, `src/table/lib/get-value-at-path.ts`, and `src/table/filters/shared/filter-functions.ts` are pure modules with no React or DOM dependency; each is tested as a pure function and then wrapped by thin React adapters.
 - **Filter widgets per kind.** Six small components under `src/table/filters/` (`text`, `number-range`, `enum`, `boolean` as radio group, `tags` as checkbox multi-select, `date-range`). Each uses the shared `FilterComponentProps<D, V>` shape and calls `onChange(undefined)` to clear. `column-filter.tsx` dispatches on `descriptor.kind`.
 - **Labels centralised.** Every user-visible string the table renders lives in `src/table/table-labels.ts` with Romanian defaults. The component merges `labels?` over `DEFAULT_LABELS` with `resolveLabels` and publishes them through a light React Context (`src/table/components/labels-context.tsx`) so widgets read the merged bag without prop drilling.
 - **Controlled component.** The table reads from `state` and emits every change to `onStateChange`. Filter and `pageSize` transitions reset `pageIndex` to `0`. This is the same shape Phase 4's URL hooks will produce, so wrapping with router hooks is additive.
@@ -202,7 +238,7 @@ When Zod ships a public replacement (or we are explicitly approved to consume `_
 Phase 3 adds four new test files (57 new tests, 116 total):
 
 - `src/table/lib/pure-helpers.test.ts` — `getValueAtPath`, `formatValue` for every kind, `createDefaultTableState`.
-- `src/table/filters/filter-functions.test.ts` — the six pure predicates with their full value space.
+- `src/table/filters/shared/filter-functions.test.ts` — the six pure predicates with their full value space.
 - `src/table/components/data-table.test.tsx` — end-to-end: column generation, nested dotted paths, cell rendering per kind, each filter kind, sorting including tags-not-sortable, pagination (page-size reset, next/previous), labels override, empty state, accessibility (aria-sort, aria-labels, navigation landmark), controlled-state transitions, and an unrelated third schema.
 - `src/table/api-surface.test.ts` — imports every runtime value and type from `src/table/index.ts` so a deleted export fails the gate.
 
@@ -217,17 +253,27 @@ All reusable URL logic lives inside `src/table/`. There is no native History API
 ### Modules
 
 ```
-src/table/url/          Pure TypeScript (no React / router / TanStack Table)
-  codec-keys.ts         Namespace + dotted-path key construction
-  sort.ts               Single-column sort token (`name` / `-name` / ``)
-  value-encoders.ts     Per-kind filter encode / decode
-  codec.ts              encodeTableState / decodeTableState / canonicaliseSearch
-  compose-search-validator.ts
-                        Factory: schema → validateSearch function
+src/table/schema/              Zod interpretation + descriptors + metadata config validation
+  interpret / build-leaf / resolve-field-meta / unwrap / field-meta.schema
+  option-encoding-config.ts    Encoding compatibility + slug collision checks + toUrlSlug
+  url-value-encoding.constants.ts
+src/table/filters/
+  shared/                      Filter-value Zod contracts, parsers, predicates, shared SCSS
+  text|enum|boolean|tags|number-range|date-range-filter/   Colocated UI
+  column-filter/               Kind dispatcher
+src/table/url/                 Search serialization (no React)
+  option-encoding.ts           encode/decode tokens (imports toUrlSlug from schema)
+  filter-encoders|decoders|value-codec, pagination, sort, search-*, table-state-codec
 src/table/hooks/
   use-data-table-url-state.ts
-                        useSearch({ strict: false }) + useNavigate → { state, onStateChange }
 ```
+
+Dependency direction: `schema` → (no url). `filters` → schema. `url` → schema + filters/shared. `hooks` → schema + url.
+`toUrlSlug` lives in `src/table/lib/to-url-slug.ts` (pure string helper). Schema config validation and URL token encode/decode both import it — no schema↔url cycle and no duplicated slug algorithm.
+
+URL search validation uses FieldDescriptors once (via `createCodecOptions` / `resolveCodecOptions`), not a dynamic Zod URL schema. Known table keys are precomputed into `tableSearchKeySet`; range sub-keys are only claimed for numeric/date fields.
+
+Positional encoding remains a generic enum strategy (1-based option order). The intended primary use case is binary fields such as Active/Inactive, Male/Female, or Yes/No; it is not yet scoped to a dedicated binary-filter API, and two-option enums are not treated as booleans.
 
 ### Single source of truth
 

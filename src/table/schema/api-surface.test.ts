@@ -4,10 +4,7 @@ import { z } from "zod";
 import {
   DIAGNOSTIC_CODES,
   FIELD_KINDS,
-  FILTER_KINDS,
-  defaultFilterKind,
   interpretSchema,
-  isSortableKind,
   SchemaInterpretationError,
   type BooleanFieldDescriptor,
   type DateFieldDescriptor,
@@ -17,38 +14,57 @@ import {
   type FieldDescriptor,
   type FieldKind,
   type FieldWrappers,
-  type FilterKind,
   type InterpretationResult,
   type InterpretOptions,
   type NumericFieldDescriptor,
+  type OptionUrlEncodingIssue,
   type ResolvedFieldMeta,
   type TableFieldMeta,
   type TagsFieldDescriptor,
   type TextFieldDescriptor,
+  type UrlValueEncoding,
+  URL_VALUE_ENCODINGS,
+  decodeDescriptorOption,
+  decodeOptionFromUrlToken,
+  encodeDescriptorOption,
+  encodeOptionToUrlToken,
+  resolveOptionUrlEncoding,
+  toUrlSlug,
 } from "../index";
 describe("schema interpreter — public API surface", () => {
   it("exports runtime values with their documented shapes", () => {
     expect(typeof interpretSchema).toBe("function");
-    expect(typeof isSortableKind).toBe("function");
-    expect(typeof defaultFilterKind).toBe("function");
     expect(typeof SchemaInterpretationError).toBe("function");
+    expect(typeof resolveOptionUrlEncoding).toBe("function");
+    expect(typeof encodeOptionToUrlToken).toBe("function");
+    expect(typeof decodeOptionFromUrlToken).toBe("function");
+    expect(typeof encodeDescriptorOption).toBe("function");
+    expect(typeof decodeDescriptorOption).toBe("function");
+    expect(typeof toUrlSlug).toBe("function");
     expect(FIELD_KINDS.TEXT).toBe("text");
-    expect(FILTER_KINDS.TEXT_SEARCH).toBe("text-search");
     expect(DIAGNOSTIC_CODES.ROOT_NOT_OBJECT).toBe("root-not-object");
+    expect(URL_VALUE_ENCODINGS.POSITIONAL).toBe("positional");
+    const encoding: UrlValueEncoding = URL_VALUE_ENCODINGS.SLUG;
+    const diacriticOption = "bursă";
+    const issue = resolveOptionUrlEncoding({
+      requestedEncoding: encoding,
+      optionValues: [diacriticOption],
+      allowPositional: false,
+    });
+    expect(issue).toBeUndefined();
+    expect(toUrlSlug(diacriticOption)).toBe("bursa");
+    expect(encodeOptionToUrlToken(diacriticOption, [diacriticOption], encoding)).toBe("bursa");
+    expect(decodeOptionFromUrlToken("bursa", [diacriticOption], encoding)).toBe(diacriticOption);
     const err = new SchemaInterpretationError([
       { code: DIAGNOSTIC_CODES.ROOT_NOT_OBJECT, path: "", message: "sample", hint: "fix it" },
     ]);
     expect(err).toBeInstanceOf(SchemaInterpretationError);
     expect(err.diagnostics).toHaveLength(1);
   });
-  it("exposes FieldKind values that round-trip through the capability helpers", () => {
+  it("exposes FieldKind values", () => {
     const kinds: FieldKind[] = Object.values(FIELD_KINDS);
     expect(kinds).toHaveLength(6);
-    for (const kind of kinds) {
-      const filter: FilterKind = defaultFilterKind(kind);
-      expect(Object.values(FILTER_KINDS)).toContain(filter);
-      expect(typeof isSortableKind(kind)).toBe("boolean");
-    }
+    expect(kinds).toEqual(expect.arrayContaining(["text", "numeric", "tags"]));
   });
   it("returns a typed InterpretationResult with options honoring InterpretOptions", () => {
     const options: InterpretOptions = { throwOnDiagnostics: false };
@@ -90,7 +106,12 @@ describe("schema interpreter — public API surface", () => {
     expect(wrappers.optional).toBe(false);
   });
   it("accepts TableFieldMeta inside z.meta() and emits DiagnosticIssue with a DiagnosticCode", () => {
-    const tableMeta: TableFieldMeta = { hidden: true };
+    const tableMeta: TableFieldMeta = {
+      hidden: true,
+      urlParam: "gen",
+      urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL,
+      optionLabels: { male: "Masculin" },
+    };
     const schema = z.object({
       id: z.string().meta({ table: tableMeta }),
     });
@@ -104,5 +125,11 @@ describe("schema interpreter — public API surface", () => {
       hint: "sample hint",
     };
     expect(issue.code).toBe(DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA);
+    const encodingIssue: OptionUrlEncodingIssue = {
+      code: DIAGNOSTIC_CODES.URL_SLUG_COLLISION,
+      message: "collision",
+      hint: "override",
+    };
+    expect(encodingIssue.code).toBe(DIAGNOSTIC_CODES.URL_SLUG_COLLISION);
   });
 });

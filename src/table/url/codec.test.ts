@@ -3,17 +3,16 @@ import { z } from "zod";
 
 import { interpretSchema } from "../schema/index";
 
+import { composeTableSearchValidator } from "./compose-search-validator";
+import { createCodecOptions } from "./resolve-codec-options";
+import { canonicaliseSearch, shallowEqual, stripTableKeys } from "./search-canonical";
+import { decodeSort, encodeSort } from "./sort-codec";
 import {
-  canonicaliseSearch,
   decodeTableState,
   encodeTableState,
-  shallowEqual,
-  stripTableKeys,
   type CodecOptions,
   type CodecTableState,
-} from "./codec";
-import { composeTableSearchValidator } from "./compose-search-validator";
-import { parseSort, stringifySort } from "./sort";
+} from "./table-state-codec";
 const Schema = z.object({
   name: z.string().meta({ title: "Nume" }),
   age: z.number().meta({ title: "Vârstă" }),
@@ -26,14 +25,20 @@ const Schema = z.object({
   }),
 });
 const PAGE_SIZES = [10, 25, 50] as const;
-function options(overrides: Partial<CodecOptions> = {}): CodecOptions {
+function options(
+  overrides: {
+    readonly urlNamespace?: string;
+    readonly defaultPageSize?: number;
+    readonly pageSizes?: readonly number[];
+  } = {},
+): CodecOptions {
   const { fields } = interpretSchema(Schema);
-  return {
+  return createCodecOptions({
     fields,
     defaultPageSize: 25,
     pageSizes: PAGE_SIZES,
     ...overrides,
-  };
+  });
 }
 function defaultState(overrides: Partial<CodecTableState> = {}): CodecTableState {
   return {
@@ -44,18 +49,18 @@ function defaultState(overrides: Partial<CodecTableState> = {}): CodecTableState
   };
 }
 describe("sort token", () => {
-  it("stringifies ascending / descending / empty", () => {
-    expect(stringifySort([])).toBe("");
-    expect(stringifySort([{ id: "name", desc: false }])).toBe("name");
-    expect(stringifySort([{ id: "address.city", desc: true }])).toBe("-address.city");
+  it("encodes ascending / descending / empty", () => {
+    expect(encodeSort([])).toBe("");
+    expect(encodeSort([{ id: "name", desc: false }])).toBe("name");
+    expect(encodeSort([{ id: "address.city", desc: true }])).toBe("-address.city");
   });
-  it("parses ascending / descending / empty / malformed", () => {
-    expect(parseSort("")).toEqual([]);
-    expect(parseSort(undefined)).toEqual([]);
-    expect(parseSort("name")).toEqual([{ id: "name", desc: false }]);
-    expect(parseSort("-name")).toEqual([{ id: "name", desc: true }]);
-    expect(parseSort("-")).toEqual([]);
-    expect(parseSort(42)).toEqual([]);
+  it("decodes ascending / descending / empty / malformed", () => {
+    expect(decodeSort("")).toEqual([]);
+    expect(decodeSort(undefined)).toEqual([]);
+    expect(decodeSort("name")).toEqual([{ id: "name", desc: false }]);
+    expect(decodeSort("-name")).toEqual([{ id: "name", desc: true }]);
+    expect(decodeSort("-")).toEqual([]);
+    expect(decodeSort(42)).toEqual([]);
   });
 });
 describe("encodeTableState", () => {
@@ -138,7 +143,7 @@ describe("decodeTableState", () => {
     const encoded = encodeTableState(original, opts);
     expect(decodeTableState(encoded, opts)).toEqual(original);
   });
-  it("clamps invalid pageSize to the default and drops invalid filters", () => {
+  it("falls back to the default pageSize when the value is not allowed and drops invalid filters", () => {
     const decoded = decodeTableState(
       {
         page: "0",
@@ -161,6 +166,24 @@ describe("decodeTableState", () => {
   it("accepts numeric page / pageSize that arrive as numbers (router coercion)", () => {
     const decoded = decodeTableState({ page: 4, pageSize: 10, sort: "" }, options());
     expect(decoded.pagination).toEqual({ pageIndex: 3, pageSize: 10 });
+  });
+  it("reads only kind-appropriate filter keys (numeric ignores scalar; text ignores range)", () => {
+    const decoded = decodeTableState(
+      {
+        page: 1,
+        pageSize: 25,
+        sort: "",
+        age: "18",
+        "age.min": "20",
+        "name.min": "ignore-me",
+        name: "Ana",
+      },
+      options(),
+    );
+    expect(decoded.columnFilters).toEqual([
+      { id: "name", value: "Ana" },
+      { id: "age", value: { min: 20 } },
+    ]);
   });
 });
 describe("canonicaliseSearch", () => {
@@ -215,6 +238,22 @@ describe("stripTableKeys", () => {
       shared: "x",
     });
   });
+
+  it("does not treat range sub-keys as table keys for non-range fields", () => {
+    const stripped = stripTableKeys(
+      {
+        name: "Ana",
+        "name.min": "keep-me",
+        "age.min": "18",
+        tab: "overview",
+      },
+      options(),
+    );
+    expect(stripped).toEqual({
+      "name.min": "keep-me",
+      tab: "overview",
+    });
+  });
 });
 describe("shallowEqual", () => {
   it("compares encoded search records by key/value identity", () => {
@@ -259,5 +298,159 @@ describe("composeTableSearchValidator", () => {
     expect(out["s.sort"]).toBe("");
     expect(out["s.name"]).toBe("Ana");
     expect(out.foreign).toBe("1");
+  });
+});
+
+describe("URL value encodings", () => {
+  const positionalOptions = ["male", "female"] as const;
+  const diacriticTagOptions = ["bursă", "olimpic"] as const;
+  const collidingSlugOptions = ["bursă", "bursa"] as const;
+
+  const EncodedSchema = z.object({
+    gender: z.enum(positionalOptions).meta({
+      title: "Gen",
+      table: {
+        urlParam: "gen",
+        urlValueEncoding: "positional",
+        optionLabels: { male: "Masculin", female: "Feminin" },
+      },
+    }),
+    tags: z.array(z.enum(diacriticTagOptions)).meta({
+      title: "Etichete",
+      table: { urlValueEncoding: "slug" },
+    }),
+    status: z.enum(["new", "done"]).meta({ title: "Status" }),
+  });
+
+  function encodedOptions(): CodecOptions {
+    const { fields } = interpretSchema(EncodedSchema);
+    return createCodecOptions({
+      fields,
+      defaultPageSize: 25,
+      pageSizes: PAGE_SIZES,
+    });
+  }
+
+  it("encodes positional enums under a urlParam alias", () => {
+    const encoded = encodeTableState(
+      defaultState({
+        columnFilters: [{ id: "gender", value: positionalOptions[0] }],
+      }),
+      encodedOptions(),
+    );
+    expect(encoded.gen).toBe(1);
+    expect(encoded.gender).toBeUndefined();
+  });
+
+  it("decodes positional aliases and rejects malformed positions", () => {
+    const opts = encodedOptions();
+    expect(decodeTableState({ gen: 2 }, opts).columnFilters).toEqual([
+      { id: "gender", value: positionalOptions[1] },
+    ]);
+    expect(decodeTableState({ gen: "01" }, opts).columnFilters).toEqual([]);
+    expect(decodeTableState({ gen: 0 }, opts).columnFilters).toEqual([]);
+    expect(decodeTableState({ gen: 9 }, opts).columnFilters).toEqual([]);
+  });
+
+  it("slug-encodes tags while keeping canonical filter values", () => {
+    const opts = encodedOptions();
+    const encoded = encodeTableState(
+      defaultState({
+        columnFilters: [{ id: "tags", value: [...diacriticTagOptions] }],
+      }),
+      opts,
+    );
+    expect(encoded.tags).toBe("bursa,olimpic");
+    expect(decodeTableState({ tags: "bursa,olimpic" }, opts).columnFilters).toEqual([
+      { id: "tags", value: [...diacriticTagOptions] },
+    ]);
+  });
+
+  it("keeps canonical encoding when no strategy is configured", () => {
+    const encoded = encodeTableState(
+      defaultState({
+        columnFilters: [{ id: "status", value: "done" }],
+      }),
+      encodedOptions(),
+    );
+    expect(encoded.status).toBe("done");
+  });
+
+  it("clears positional filters from the URL when the value is removed", () => {
+    const encoded = encodeTableState(
+      defaultState({
+        columnFilters: [],
+      }),
+      encodedOptions(),
+    );
+    expect(encoded.gen).toBeUndefined();
+  });
+
+  it("uses slug overrides when configured on the schema", () => {
+    const OverrideSchema = z.object({
+      tags: z.array(z.enum(collidingSlugOptions)).meta({
+        table: {
+          urlValueEncoding: "slug",
+          urlSlugOverrides: { bursă: "scholarship", bursa: "plain" },
+        },
+      }),
+    });
+    const { fields } = interpretSchema(OverrideSchema);
+    const opts = createCodecOptions({
+      fields,
+      defaultPageSize: 25,
+      pageSizes: PAGE_SIZES,
+    });
+    const encoded = encodeTableState(
+      defaultState({
+        columnFilters: [{ id: "tags", value: [...collidingSlugOptions] }],
+      }),
+      opts,
+    );
+    expect(encoded.tags).toBe("scholarship,plain");
+    expect(decodeTableState({ tags: "scholarship,plain" }, opts).columnFilters).toEqual([
+      { id: "tags", value: [...collidingSlugOptions] },
+    ]);
+  });
+
+  it("keeps digit-only canonical enum options as strings in the URL", () => {
+    const DigitSchema = z.object({
+      code: z.enum(["123", "456"]).meta({ title: "Code" }),
+    });
+    const { fields } = interpretSchema(DigitSchema);
+    const opts = createCodecOptions({
+      fields,
+      defaultPageSize: 25,
+      pageSizes: PAGE_SIZES,
+    });
+    const encoded = encodeTableState(
+      defaultState({
+        columnFilters: [{ id: "code", value: "123" }],
+      }),
+      opts,
+    );
+    expect(encoded.code).toBe("123");
+    expect(typeof encoded.code).toBe("string");
+    expect(decodeTableState({ code: "123" }, opts).columnFilters).toEqual([
+      { id: "code", value: "123" },
+    ]);
+  });
+
+  it("encodes tags only from validated tag filter values", () => {
+    const opts = encodedOptions();
+    const encoded = encodeTableState(
+      defaultState({
+        columnFilters: [{ id: "tags", value: [1, diacriticTagOptions[0], null] }],
+      }),
+      opts,
+    );
+    expect(encoded.tags).toBeUndefined();
+  });
+
+  it("keeps known tag tokens and drops unknown ones on decode", () => {
+    const opts = encodedOptions();
+    expect(decodeTableState({ tags: "bursa,unknown,olimpic" }, opts).columnFilters).toEqual([
+      { id: "tags", value: [...diacriticTagOptions] },
+    ]);
   });
 });

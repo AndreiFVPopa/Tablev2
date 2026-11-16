@@ -2,7 +2,7 @@ import { useLabels } from "@table/components/labels-context";
 
 import { BOOLEAN_FILTER_CHOICE, type BooleanFilterChoice } from "./boolean-filter-choice.constants";
 
-import type { BooleanFilterValue } from "../filter-values.types";
+import type { BooleanFilterValue } from "../shared/filter-values.types";
 import type { BooleanFilterProps } from "./boolean-filter.types";
 
 export function useBooleanFilter({ descriptor, value, onChange }: BooleanFilterProps): {

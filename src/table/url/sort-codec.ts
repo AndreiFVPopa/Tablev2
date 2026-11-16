@@ -1,9 +1,6 @@
-export type UrlSortingState = readonly {
-  readonly id: string;
-  readonly desc: boolean;
-}[];
+import type { CodecSortingState } from "./codec.types";
 
-export function parseSort(inputValue: unknown): UrlSortingState {
+export function decodeSort(inputValue: unknown): CodecSortingState {
   if (typeof inputValue !== "string" || inputValue === "") return [];
   if (inputValue.startsWith("-")) {
     const columnId = inputValue.slice(1);
@@ -12,7 +9,7 @@ export function parseSort(inputValue: unknown): UrlSortingState {
   return [{ id: inputValue, desc: false }];
 }
 
-export function stringifySort(sorting: UrlSortingState): string {
+export function encodeSort(sorting: CodecSortingState): string {
   if (sorting.length === 0) return "";
   const [primarySort] = sorting;
   if (primarySort === undefined) return "";

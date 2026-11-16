@@ -11,7 +11,7 @@ import {
   parseNumberRangeFilterValue,
   parseTagsFilterValue,
   parseTextFilterValue,
-} from "../parse-filter-value";
+} from "../shared/parse-filter-value";
 import { TagsFilter } from "../tags-filter";
 import { TextFilter } from "../text-filter";
 

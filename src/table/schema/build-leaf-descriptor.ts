@@ -1,9 +1,8 @@
 import { z } from "zod";
 
-import { describeSchema } from "./describe-schema";
 import { DIAGNOSTIC_CODES } from "./diagnostic-codes.constants";
 import { FIELD_KINDS } from "./field-kinds.constants";
-import { toClassicZodType } from "./to-classic-zod-type";
+import { resolveOptionUrlEncoding } from "./option-encoding-config";
 import { unwrapSchema } from "./unwrap-schema";
 
 import type {
@@ -13,15 +12,19 @@ import type {
   ResolvedFieldMeta,
 } from "./descriptors";
 
-export interface LeafBase extends FieldWrappers {
+type LeafBase = FieldWrappers & {
   readonly path: string;
   readonly segments: readonly string[];
   readonly meta: ResolvedFieldMeta;
-}
+};
 
 export function buildLeafDescriptor(
   inner: z.ZodType,
-  base: LeafBase,
+  base: FieldWrappers & {
+    readonly path: string;
+    readonly segments: readonly string[];
+    readonly meta: ResolvedFieldMeta;
+  },
   diagnostics: DiagnosticIssue[],
 ): FieldDescriptor | null {
   if (inner instanceof z.ZodDate) {
@@ -45,7 +48,7 @@ export function buildLeafDescriptor(
   diagnostics.push({
     code: DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA,
     path: base.path,
-    message: `Field "${base.path}" uses ${describeSchema(inner)}, which the schema interpreter does not support.`,
+    message: `Field "${base.path}" uses ${schemaTypeName(inner)}, which the schema interpreter does not support.`,
     hint: "Supported kinds today: string, number, boolean, enum, date, array-of-enum, and nested object. Open a Phase-2 follow-up if you need another.",
   });
   return null;
@@ -60,7 +63,12 @@ function makeEnumDescriptor(
   if (!stringOptions) {
     return null;
   }
-  return { ...base, kind: FIELD_KINDS.ENUM, options: stringOptions };
+  pushUrlEncodingIssue(base, stringOptions, true, diagnostics);
+  return {
+    ...base,
+    kind: FIELD_KINDS.ENUM,
+    options: stringOptions,
+  };
 }
 
 function makeArrayDescriptor(
@@ -68,12 +76,12 @@ function makeArrayDescriptor(
   base: LeafBase,
   diagnostics: DiagnosticIssue[],
 ): FieldDescriptor | null {
-  const element = unwrapSchema(toClassicZodType(arraySchema.element)).inner;
+  const element = unwrapSchema(arraySchema.element as z.ZodType).inner;
   if (!(element instanceof z.ZodEnum)) {
     diagnostics.push({
       code: DIAGNOSTIC_CODES.NON_ENUM_ARRAY,
       path: base.path,
-      message: `Field "${base.path}" is an array of ${describeSchema(element)}; only arrays of enum are supported as tag columns.`,
+      message: `Field "${base.path}" is an array of ${schemaTypeName(element)}; only arrays of enum are supported as tag columns.`,
       hint: "Switch the element to z.enum([...]) or model the collection as a nested object with its own table.",
     });
     return null;
@@ -82,7 +90,37 @@ function makeArrayDescriptor(
   if (!stringOptions) {
     return null;
   }
-  return { ...base, kind: FIELD_KINDS.TAGS, options: stringOptions };
+  pushUrlEncodingIssue(base, stringOptions, false, diagnostics);
+  return {
+    ...base,
+    kind: FIELD_KINDS.TAGS,
+    options: stringOptions,
+  };
+}
+
+function pushUrlEncodingIssue(
+  base: LeafBase,
+  optionValues: readonly string[],
+  allowPositional: boolean,
+  diagnostics: DiagnosticIssue[],
+): void {
+  const issue = resolveOptionUrlEncoding({
+    requestedEncoding: base.meta.urlValueEncoding,
+    optionValues,
+    allowPositional,
+    ...(base.meta.urlSlugOverrides !== undefined
+      ? { slugOverrides: base.meta.urlSlugOverrides }
+      : {}),
+  });
+  if (issue === undefined) {
+    return;
+  }
+  diagnostics.push({
+    code: issue.code,
+    path: base.path,
+    message: `Field "${base.path}" rejected urlValueEncoding "${base.meta.urlValueEncoding}": ${issue.message}.`,
+    hint: issue.hint,
+  });
 }
 
 function collectStringEnumOptions(
@@ -146,4 +184,9 @@ function readNumberFacets(schema: z.ZodNumber): {
     integer,
     format,
   };
+}
+
+function schemaTypeName(schema: z.ZodType): string {
+  const constructorName = schema.constructor.name;
+  return constructorName.length > 0 ? constructorName : "<unknown schema>";
 }

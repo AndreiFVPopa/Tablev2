@@ -12,6 +12,7 @@ import {
   resolveDefaultPageSize,
   resolveLabels,
   useDataTableUrlState,
+  URL_VALUE_ENCODINGS,
   type BooleanFilterValue,
   type ColumnFilterValue,
   type ComposeTableSearchValidatorOptions,
@@ -24,7 +25,12 @@ import {
   type TagsFilterValue,
   type UseDataTableUrlStateOptions,
   type UseDataTableUrlStateResult,
+  type UrlValueEncoding,
 } from "./index";
+
+import type { TableColumnDef } from "./lib/column-factory";
+import type { TableFeaturesConfig } from "./lib/table-features";
+import type { ColumnDef } from "@tanstack/react-table";
 describe("DataTable public API — runtime values", () => {
   it("exposes the component and a default page-size catalogue", () => {
     expect(typeof DataTable).toBe("function");
@@ -41,6 +47,9 @@ describe("DataTable public API — runtime values", () => {
       "date",
       "tags",
     ]);
+    const encoding: UrlValueEncoding = URL_VALUE_ENCODINGS.CANONICAL;
+    expect(encoding).toBe("canonical");
+    expect(Object.values(URL_VALUE_ENCODINGS)).toEqual(["canonical", "positional", "slug"]);
   });
   it("provides a controlled-state factory with sane defaults", () => {
     const s: DataTableState = createDefaultTableState();
@@ -69,6 +78,16 @@ describe("DataTable public API — runtime values", () => {
     expect(opts.urlNamespace).toBe("s");
     expect(hookOpts.defaultPageSize).toBe(10);
     expect(resultShape.state.pagination.pageIndex).toBe(0);
+  });
+});
+describe("TanStack ColumnDef generics", () => {
+  it("uses ColumnDef<TFeatures, TData> with features first (row data is the second generic)", () => {
+    interface SampleRow {
+      readonly id: string;
+    }
+    expectTypeOf<TableColumnDef<SampleRow>>().toEqualTypeOf<
+      ColumnDef<TableFeaturesConfig, SampleRow>
+    >();
   });
 });
 describe("DataTable public API — type surface", () => {

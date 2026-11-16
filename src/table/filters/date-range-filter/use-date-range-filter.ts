@@ -2,7 +2,7 @@ import { useLabels } from "@table/components/labels-context";
 
 import { DATE_RANGE_BOUNDARY, type DateRangeBoundary } from "./date-range-boundary.constants";
 
-import type { DateRangeFilterValue } from "../filter-values.types";
+import type { DateRangeFilterValue } from "../shared/filter-values.types";
 import type { DateRangeFilterProps } from "./date-range-filter.types";
 
 export function useDateRangeFilter({ descriptor, value, onChange }: DateRangeFilterProps): {

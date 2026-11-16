@@ -1,6 +1,6 @@
 import { useLabels } from "@table/components/labels-context";
 
-import styles from "../filters.module.scss";
+import styles from "../shared/filters.module.scss";
 
 import type { TextFilterProps } from "./text-filter.types";
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-import { DATE_RANGE_BOUNDARY } from "./date-range-filter/date-range-boundary.constants";
-import { NUMBER_RANGE_BOUNDARY } from "./number-range-filter/number-range-boundary.constants";
+import { DATE_RANGE_BOUNDARY } from "../date-range-filter/date-range-boundary.constants";
+import { NUMBER_RANGE_BOUNDARY } from "../number-range-filter/number-range-boundary.constants";
 
 export const textFilterValueSchema = z.string();
 

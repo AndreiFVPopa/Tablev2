@@ -196,3 +196,61 @@ describe("interpretSchema — metadata is independent of wrapper order", () => {
     expect(r2?.nullable).toBe(true);
   });
 });
+
+describe("interpretSchema — invalid metadata", () => {
+  it("keeps valid inner encoding when outer encoding is invalid and diagnoses the outer value", () => {
+    const schema = z.object({
+      gender: z
+        .enum(["male", "female"])
+        .meta({ table: { urlValueEncoding: "positional" } })
+        .optional()
+        .meta({ table: { urlValueEncoding: "nope" as "canonical" } }),
+    });
+    const { fields, diagnostics } = interpretSchema(schema);
+    expect(fields[0]?.meta.urlValueEncoding).toBe("positional");
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        code: "invalid-field-meta",
+        path: "gender",
+      }),
+    ]);
+  });
+
+  it("diagnoses empty optionLabels values without discarding sibling valid labels", () => {
+    const schema = z.object({
+      status: z.enum(["a", "b"]).meta({
+        table: {
+          optionLabels: { a: "Alpha", b: "" },
+        },
+      }),
+    });
+    const { fields, diagnostics } = interpretSchema(schema);
+    expect(fields[0]?.meta.optionLabels).toEqual({ a: "Alpha" });
+    expect(diagnostics).toEqual([
+      expect.objectContaining({
+        code: "invalid-field-meta",
+        path: "status",
+      }),
+    ]);
+  });
+
+  it("diagnoses invalid title, deprecated, hidden, and urlParam while keeping defaults", () => {
+    const schema = z.object({
+      name: z.string().meta({
+        title: "  ",
+        deprecated: "yes" as unknown as boolean,
+        table: {
+          hidden: "true" as unknown as boolean,
+          urlParam: "",
+        },
+      }),
+    });
+    const { fields, diagnostics } = interpretSchema(schema);
+    expect(fields[0]?.meta.title).toBe("name");
+    expect(fields[0]?.meta.deprecated).toBe(false);
+    expect(fields[0]?.meta.hidden).toBe(false);
+    expect(fields[0]?.meta.urlParam).toBeUndefined();
+    expect(diagnostics.length).toBeGreaterThanOrEqual(4);
+    expect(diagnostics.every((issue) => issue.code === "invalid-field-meta")).toBe(true);
+  });
+});

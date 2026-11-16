@@ -1,11 +1,11 @@
-import styles from "../filters.module.scss";
+import styles from "../shared/filters.module.scss";
 
 import { useTagsFilter } from "./use-tags-filter";
 
 import type { TagsFilterProps } from "./tags-filter.types";
 
 export function TagsFilter(props: TagsFilterProps): React.JSX.Element {
-  const { selectedTags, options, legend, handleTagToggle } = useTagsFilter(props);
+  const { selectedTags, options, optionLabels, legend, handleTagToggle } = useTagsFilter(props);
 
   return (
     <fieldset className={styles.filter__tagsGroup}>
@@ -17,7 +17,7 @@ export function TagsFilter(props: TagsFilterProps): React.JSX.Element {
             checked={selectedTags.includes(option)}
             onChange={handleTagToggle(option)}
           />
-          {option}
+          {optionLabels?.[option] ?? option}
         </label>
       ))}
     </fieldset>

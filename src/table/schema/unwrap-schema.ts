@@ -1,9 +1,9 @@
 import { z } from "zod";
 
-import { toClassicZodType } from "./to-classic-zod-type";
 import { MAX_SCHEMA_WRAPPER_DEPTH } from "./wrapper-depth.constants";
 
 import type { FieldWrappers } from "./descriptors";
+import type * as zCore from "zod/v4/core";
 
 export interface UnwrapResult {
   readonly inner: z.ZodType;
@@ -19,22 +19,22 @@ export function unwrapSchema(schema: z.ZodType): UnwrapResult {
   for (let depth = 0; depth < MAX_SCHEMA_WRAPPER_DEPTH; depth += 1) {
     if (current instanceof z.ZodOptional) {
       optional = true;
-      current = toClassicZodType(current.unwrap());
+      current = asZodType(current.unwrap());
       continue;
     }
     if (current instanceof z.ZodNullable) {
       nullable = true;
-      current = toClassicZodType(current.unwrap());
+      current = asZodType(current.unwrap());
       continue;
     }
     if (current instanceof z.ZodDefault) {
       hasDefault = true;
-      current = toClassicZodType(current.unwrap());
+      current = asZodType(current.unwrap());
       continue;
     }
     if (current instanceof z.ZodReadonly) {
       isReadonly = true;
-      current = toClassicZodType(current.unwrap());
+      current = asZodType(current.unwrap());
       continue;
     }
     break;
@@ -52,7 +52,11 @@ export function tryUnwrap(schema: z.ZodType): z.ZodType | undefined {
     schema instanceof z.ZodDefault ||
     schema instanceof z.ZodReadonly
   ) {
-    return toClassicZodType(schema.unwrap());
+    return asZodType(schema.unwrap());
   }
   return undefined;
+}
+
+function asZodType(schema: zCore.SomeType): z.ZodType {
+  return schema as z.ZodType;
 }

@@ -45,3 +45,26 @@ test("/produse is not registered as a demo route", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 2, name: /Produse/i })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Sortează Titlu/i })).toHaveCount(0);
 });
+
+test("elevi gender uses positional gen URL aliases", async ({ page }) => {
+  await page.goto("/elevi?page=1&pageSize=10&sort=&gen=1");
+  await expect(page.getByRole("table")).toBeVisible();
+  await expect(page.getByLabel(/Filtrează Gen/i)).toHaveValue("male");
+  await expect(page.getByRole("cell", { name: "Bogdan Ionescu" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "Ana Pop" })).toHaveCount(0);
+
+  await page.getByLabel(/Filtrează Gen/i).selectOption("female");
+  await expect(page).toHaveURL(/gen=2/);
+  await expect(page.getByRole("cell", { name: "Ana Pop" })).toBeVisible();
+
+  await page.reload();
+  await expect(page).toHaveURL(/gen=2/);
+  await expect(page.getByLabel(/Filtrează Gen/i)).toHaveValue("female");
+});
+
+test("elevi tags use slug URL aliases", async ({ page }) => {
+  await page.goto("/elevi?page=1&pageSize=25&sort=&tags=bursa");
+  await expect(page.getByRole("table")).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "bursă" })).toBeChecked();
+  await expect(page.getByRole("cell", { name: "Ana Pop" })).toBeVisible();
+});

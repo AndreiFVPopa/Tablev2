@@ -1,16 +1,12 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 
-import {
-  decodeTableState,
-  encodeTableState,
-  shallowEqual,
-  stripTableKeys,
-  type SearchRecord,
-} from "../url/codec";
 import { resolveCodecOptions } from "../url/resolve-codec-options";
+import { shallowEqual, stripTableKeys } from "../url/search-canonical";
+import { decodeTableState, encodeTableState } from "../url/table-state-codec";
 
 import type { DataTableState } from "../lib/table-state";
+import type { SearchRecord } from "../url/codec.types";
 import type {
   UseDataTableUrlStateOptions,
   UseDataTableUrlStateResult,
@@ -40,12 +36,9 @@ export function useDataTableUrlState({
   const state = useMemo<DataTableState>(() => {
     const decoded = decodeTableState(search, codecOptions);
     return {
-      pagination: { ...decoded.pagination },
-      sorting: decoded.sorting.map((entry) => ({ id: entry.id, desc: entry.desc })),
-      columnFilters: decoded.columnFilters.map((entry) => ({
-        id: entry.id,
-        value: entry.value,
-      })),
+      pagination: decoded.pagination,
+      sorting: [...decoded.sorting],
+      columnFilters: [...decoded.columnFilters],
     };
   }, [search, codecOptions]);
   const navigate = useNavigate();
