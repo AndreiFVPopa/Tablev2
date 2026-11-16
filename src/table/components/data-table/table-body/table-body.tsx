@@ -16,7 +16,7 @@ export function TableBody<TData extends RowData>({
     return (
       <tbody>
         <tr>
-          <td colSpan={columnCount} className={styles.empty}>
+          <td colSpan={columnCount} className={styles.dataTable__empty}>
             {emptyLabel}
           </td>
         </tr>

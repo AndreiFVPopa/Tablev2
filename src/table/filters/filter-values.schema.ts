@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+import { DATE_RANGE_BOUNDARY } from "./date-range-filter/date-range-boundary.constants";
+import { NUMBER_RANGE_BOUNDARY } from "./number-range-filter/number-range-boundary.constants";
+
 export const textFilterValueSchema = z.string();
 
 export const enumFilterValueSchema = z.union([z.string(), z.null()]);
@@ -12,30 +15,30 @@ const softFiniteNumber = z.union([z.number(), z.unknown().transform(() => undefi
 
 export const numberRangeFilterValueSchema = z
   .object({
-    min: softFiniteNumber,
-    max: softFiniteNumber,
+    [NUMBER_RANGE_BOUNDARY.MINIMUM]: softFiniteNumber,
+    [NUMBER_RANGE_BOUNDARY.MAXIMUM]: softFiniteNumber,
   })
   .transform((value) => {
-    const next = {
+    const updatedRange = {
       ...(value.min !== undefined ? { min: value.min } : {}),
       ...(value.max !== undefined ? { max: value.max } : {}),
     };
-    return Object.keys(next).length > 0 ? next : undefined;
+    return Object.keys(updatedRange).length > 0 ? updatedRange : undefined;
   });
 
 const softIsoDate = z.union([z.iso.date(), z.unknown().transform(() => undefined)]).optional();
 
 export const dateRangeFilterValueSchema = z
   .object({
-    from: softIsoDate,
-    to: softIsoDate,
+    [DATE_RANGE_BOUNDARY.FROM]: softIsoDate,
+    [DATE_RANGE_BOUNDARY.TO]: softIsoDate,
   })
   .transform((value) => {
-    const next = {
+    const updatedRange = {
       ...(value.from !== undefined ? { from: value.from } : {}),
       ...(value.to !== undefined ? { to: value.to } : {}),
     };
-    return Object.keys(next).length > 0 ? next : undefined;
+    return Object.keys(updatedRange).length > 0 ? updatedRange : undefined;
   });
 
 export const columnFilterValueSchema = z.union([

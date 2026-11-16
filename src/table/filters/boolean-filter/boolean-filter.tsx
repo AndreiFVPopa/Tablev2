@@ -1,41 +1,53 @@
-import { useLabels } from "@table/components/labels-context";
-
 import styles from "../filters.module.scss";
 
-import type { BooleanFilterValue } from "../filter-values.types";
-import type { BooleanFilterChoice, BooleanFilterProps } from "./boolean-filter.types";
-export function BooleanFilter({
-  descriptor,
-  value,
-  onChange,
-}: BooleanFilterProps): React.JSX.Element {
-  const labels = useLabels();
-  const current = currentChoice(value);
-  const name = `boolean-filter-${descriptor.path}`;
-  const legend = `${labels.filterLabelPrefix} ${descriptor.meta.title}`;
-  const select = (choice: BooleanFilterChoice) => () => {
-    onChange(choice === "all" ? undefined : choice === "true");
-  };
+import { BOOLEAN_FILTER_CHOICE } from "./boolean-filter-choice.constants";
+import { useBooleanFilter } from "./use-boolean-filter";
+
+import type { BooleanFilterProps } from "./boolean-filter.types";
+
+export function BooleanFilter(props: BooleanFilterProps): React.JSX.Element {
+  const {
+    selectedChoice,
+    fieldName,
+    legend,
+    allLabel,
+    trueLabel,
+    falseLabel,
+    handleAllChange,
+    handleTrueChange,
+    handleFalseChange,
+  } = useBooleanFilter(props);
+
   return (
-    <fieldset className={styles.booleanGroup}>
-      <legend className={styles.srOnly}>{legend}</legend>
+    <fieldset className={styles.filter__booleanGroup}>
+      <legend className={styles.filter__srOnly}>{legend}</legend>
       <label>
-        <input type="radio" name={name} checked={current === "all"} onChange={select("all")} />
-        {labels.filterBooleanAll}
+        <input
+          type="radio"
+          name={fieldName}
+          checked={selectedChoice === BOOLEAN_FILTER_CHOICE.ALL}
+          onChange={handleAllChange}
+        />
+        {allLabel}
       </label>
       <label>
-        <input type="radio" name={name} checked={current === "true"} onChange={select("true")} />
-        {labels.filterBooleanTrue}
+        <input
+          type="radio"
+          name={fieldName}
+          checked={selectedChoice === BOOLEAN_FILTER_CHOICE.TRUE}
+          onChange={handleTrueChange}
+        />
+        {trueLabel}
       </label>
       <label>
-        <input type="radio" name={name} checked={current === "false"} onChange={select("false")} />
-        {labels.filterBooleanFalse}
+        <input
+          type="radio"
+          name={fieldName}
+          checked={selectedChoice === BOOLEAN_FILTER_CHOICE.FALSE}
+          onChange={handleFalseChange}
+        />
+        {falseLabel}
       </label>
     </fieldset>
   );
-}
-function currentChoice(value: BooleanFilterValue | undefined): BooleanFilterChoice {
-  if (value === true) return "true";
-  if (value === false) return "false";
-  return "all";
 }

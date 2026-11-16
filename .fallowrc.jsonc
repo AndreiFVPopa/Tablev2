@@ -15,7 +15,6 @@
       { "name": "table", "patterns": ["src/table/**"] },
       { "name": "shared", "patterns": ["src/shared/**"] },
       { "name": "students", "patterns": ["src/features/students/**"] },
-      { "name": "products", "patterns": ["src/features/products/**"] },
       { "name": "mocks", "patterns": ["src/mocks/**"] },
       { "name": "types", "patterns": ["src/types/**", "src/vite-env.d.ts"] },
       {
@@ -38,24 +37,19 @@
         "allowTypeOnly": ["types"],
       },
       {
-        "from": "products",
-        "allow": ["table", "shared", "mocks"],
-        "allowTypeOnly": ["types"],
-      },
-      {
         "from": "app",
-        "allow": ["table", "shared", "students", "products"],
+        "allow": ["table", "shared", "students"],
         "allowTypeOnly": ["types"],
       },
       {
         "from": "mocks",
-        "allow": ["table", "shared", "students", "products"],
+        "allow": ["table", "shared", "students"],
         "allowTypeOnly": ["types"],
       },
       { "from": "types", "allow": [] },
       {
         "from": "tests",
-        "allow": ["table", "shared", "students", "products", "app", "mocks"],
+        "allow": ["table", "shared", "students", "app", "mocks"],
         "allowTypeOnly": ["types"],
       },
       { "from": "e2e", "allow": [] },
@@ -76,7 +70,6 @@
       "forbidden": [
         { "from": "table", "callee": "fetch" },
         { "from": "students", "callee": "fetch" },
-        { "from": "products", "callee": "fetch" },
       ],
     },
   },

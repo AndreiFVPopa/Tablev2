@@ -10,7 +10,8 @@ It chains, in order:
 
 1. `pnpm typecheck` — `tsc -b --noEmit` across the app, node, and e2e project references.
 2. `pnpm lint` — ESLint flat config: typescript-eslint strict + stylistic (typed), react, react-hooks, jsx-a11y, sonarjs, import-x, custom boundary rules.
-3. `pnpm stylelint` — `stylelint-config-standard-scss` with camelCase classes for SCSS Modules and a nesting ceiling.
+3. `pnpm stylelint` — `stylelint-config-standard-scss` with a camelCase-identifier BEM class-selector pattern for SCSS Modules and a nesting ceiling.
+
 4. `pnpm format:check` — Prettier.
 5. `pnpm fallow:arch` — architecture boundaries, forbidden-call rules, circular deps.
 6. `pnpm fallow:dead` — dead files, exports, dependencies.
@@ -23,7 +24,7 @@ It chains, in order:
 
 ## Fallow policy
 
-`.fallowrc.jsonc` declares zones for `app`, `table`, `shared`, `students`, `products`, `mocks`, `types`, `tests`, and `e2e`, plus the import-rules matrix documented in `ARCHITECTURE.md`. Enforcement:
+`.fallowrc.jsonc` declares zones for `app`, `table`, `shared`, `students`, `mocks`, `types`, `tests`, and `e2e`, plus the import-rules matrix documented in `ARCHITECTURE.md`. Enforcement:
 
 - `boundary-violation: error`
 - `circular-dependencies: error`
@@ -34,7 +35,7 @@ It chains, in order:
 
 `boundaries.coverage.requireAllFiles: true` with a small `allowUnmatched` list for root config files means a new source file must land in a zone or the gate fails.
 
-`boundaries.calls.forbidden` bans `fetch` from `table`, `students`, and `products`. The pattern must land in a request module instead.
+`boundaries.calls.forbidden` bans `fetch` from `table` and `students`. The demo is fixture-only; any host-app networking stays outside those zones.
 
 ### Expected empty-zone / ignore warnings
 

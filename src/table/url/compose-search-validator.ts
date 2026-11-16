@@ -1,27 +1,16 @@
-import { DEFAULT_PAGE_SIZES, resolveDefaultPageSize } from "../lib/page-sizes";
-import { interpretSchema } from "../schema/index";
+import { canonicaliseSearch, stripTableKeys, type SearchRecord } from "./codec";
+import { resolveCodecOptions } from "./resolve-codec-options";
 
-import { canonicaliseSearch, stripTableKeys, type CodecOptions, type SearchRecord } from "./codec";
-
+import type { ComposeTableSearchValidatorOptions } from "./compose-search-validator.types";
 import type { z } from "zod";
-export interface ComposeTableSearchValidatorOptions {
-  readonly urlNamespace?: string;
-  readonly defaultPageSize?: number;
-  readonly pageSizes?: readonly number[];
-  readonly extend?: (extras: Record<string, unknown>) => Record<string, unknown>;
-}
+
+export type { ComposeTableSearchValidatorOptions } from "./compose-search-validator.types";
+
 export function composeTableSearchValidator(
   tableSchema: z.ZodType,
   options: ComposeTableSearchValidatorOptions = {},
 ): (search: Record<string, unknown>) => Record<string, unknown> {
-  const { fields } = interpretSchema(tableSchema);
-  const pageSizes = options.pageSizes ?? DEFAULT_PAGE_SIZES;
-  const codecOptions: CodecOptions = {
-    fields,
-    ...(options.urlNamespace !== undefined ? { urlNamespace: options.urlNamespace } : {}),
-    defaultPageSize: options.defaultPageSize ?? resolveDefaultPageSize(pageSizes),
-    pageSizes,
-  };
+  const codecOptions = resolveCodecOptions(tableSchema, options);
   const extend = options.extend;
   return (search) => {
     const safeSearch: SearchRecord = search;

@@ -40,9 +40,9 @@ test("empty filtered results announce the empty label", async ({ page }) => {
   await expect(page.getByText("Nu există rezultate.")).toBeVisible();
 });
 
-test("produse loading completes into a labelled table", async ({ page }) => {
-  await page.goto("/produse");
-  await expect(page.getByRole("heading", { level: 2, name: /Produse/i })).toBeVisible();
+test("elevi renders a labelled table from fixtures", async ({ page }) => {
+  await page.goto("/elevi");
+  await expect(page.getByRole("heading", { level: 2, name: /Elevi/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /Tabel de date/i })).toBeVisible();
   await expect(page.getByRole("columnheader").first()).toBeVisible();
 });

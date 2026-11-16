@@ -4,9 +4,10 @@ export default {
   customSyntax: "postcss-scss",
   rules: {
     "selector-class-pattern": [
-      "^[a-z][a-zA-Z0-9]+$",
+      "^[a-z][a-zA-Z0-9]*(__[a-z][a-zA-Z0-9]*)?(--[a-z][a-zA-Z0-9]*)?$",
       {
-        message: "Expected class selector to be camelCase (SCSS Modules convention).",
+        message:
+          "Expected class selector to follow BEM with camelCase identifiers (block, block__element, block--modifier).",
       },
     ],
     "no-descending-specificity": null,
@@ -35,6 +36,6 @@ export default {
     ],
     "scss/no-global-function-names": null,
     "scss/dollar-variable-pattern": "^[a-z][a-zA-Z0-9]*$",
-    "custom-property-pattern": "^[a-z][a-zA-Z0-9-]*$",
+    "custom-property-pattern": "^[a-z][a-z0-9-]*$",
   },
 };

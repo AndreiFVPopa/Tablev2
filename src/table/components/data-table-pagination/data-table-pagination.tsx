@@ -3,22 +3,23 @@ import { useDataTablePagination } from "./use-data-table-pagination";
 
 import type { DataTablePaginationProps } from "./data-table-pagination.types";
 import type { RowData } from "@tanstack/react-table";
+
 export function DataTablePagination<TData extends RowData>({
   table,
   pageSizes,
 }: DataTablePaginationProps<TData>): React.JSX.Element {
-  const vm = useDataTablePagination(table, pageSizes);
+  const pagination = useDataTablePagination(table, pageSizes);
   return (
-    <nav aria-label={vm.landmark} className={styles.pagination}>
-      <div className={styles.pageSizeGroup}>
+    <nav aria-label={pagination.landmark} className={styles.pagination}>
+      <div className={styles.pagination__pageSize}>
         <label>
-          <span>{vm.pageSizeLabel}</span>
+          <span>{pagination.pageSizeLabel}</span>
           <select
-            value={vm.pageSize}
-            onChange={vm.onPageSizeChange}
-            className={styles.pageSizeSelect}
+            value={pagination.pageSize}
+            onChange={pagination.onPageSizeChange}
+            className={styles.pagination__pageSizeSelect}
           >
-            {vm.pageSizes.map((size) => (
+            {pagination.pageSizes.map((size) => (
               <option key={size} value={size}>
                 {size}
               </option>
@@ -27,32 +28,42 @@ export function DataTablePagination<TData extends RowData>({
         </label>
       </div>
 
-      <span className={styles.summary} aria-live="polite">
-        {vm.summary}
+      <span className={styles.pagination__summary} aria-live="polite">
+        {pagination.summary}
       </span>
 
-      <div className={styles.pageControls}>
+      <div className={styles.pagination__controls}>
         <button
           type="button"
-          onClick={vm.onFirst}
-          disabled={!vm.canPrevious}
-          aria-label={vm.firstLabel}
+          onClick={pagination.onFirst}
+          disabled={!pagination.canPrevious}
+          aria-label={pagination.firstLabel}
         >
           «
         </button>
         <button
           type="button"
-          onClick={vm.onPrevious}
-          disabled={!vm.canPrevious}
-          aria-label={vm.previousLabel}
+          onClick={pagination.onPrevious}
+          disabled={!pagination.canPrevious}
+          aria-label={pagination.previousLabel}
         >
           ‹
         </button>
-        <span className={styles.pageOf}>{vm.pageOf}</span>
-        <button type="button" onClick={vm.onNext} disabled={!vm.canNext} aria-label={vm.nextLabel}>
+        <span className={styles.pagination__pageOf}>{pagination.pageOf}</span>
+        <button
+          type="button"
+          onClick={pagination.onNext}
+          disabled={!pagination.canNext}
+          aria-label={pagination.nextLabel}
+        >
           ›
         </button>
-        <button type="button" onClick={vm.onLast} disabled={!vm.canNext} aria-label={vm.lastLabel}>
+        <button
+          type="button"
+          onClick={pagination.onLast}
+          disabled={!pagination.canNext}
+          aria-label={pagination.lastLabel}
+        >
           »
         </button>
       </div>

@@ -1,3 +1,5 @@
+import { DATE_RANGE_BOUNDARY } from "@table/filters/date-range-filter/date-range-boundary.constants";
+import { NUMBER_RANGE_BOUNDARY } from "@table/filters/number-range-filter/number-range-boundary.constants";
 import {
   parseBooleanFilterValue,
   parseDateRangeFilterValue,
@@ -6,6 +8,8 @@ import {
   parseTextFilterValue,
 } from "@table/filters/parse-filter-value";
 import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
+
+import { BOOLEAN_URL_VALUE } from "./boolean-url.constants";
 
 import type {
   BooleanFilterValue,
@@ -66,8 +70,8 @@ function encodeNumberRange(value: unknown): EncodedFilterParts {
   const parsed = parseNumberRangeFilterValue(value);
   if (parsed === undefined) return {};
   return {
-    ...(parsed.min !== undefined ? { min: parsed.min } : {}),
-    ...(parsed.max !== undefined ? { max: parsed.max } : {}),
+    ...(parsed.min !== undefined ? { [NUMBER_RANGE_BOUNDARY.MINIMUM]: parsed.min } : {}),
+    ...(parsed.max !== undefined ? { [NUMBER_RANGE_BOUNDARY.MAXIMUM]: parsed.max } : {}),
   };
 }
 
@@ -75,8 +79,8 @@ function encodeDateRange(value: unknown): EncodedFilterParts {
   const parsed = parseDateRangeFilterValue(value);
   if (parsed === undefined) return {};
   return {
-    ...(parsed.from !== undefined ? { from: parsed.from } : {}),
-    ...(parsed.to !== undefined ? { to: parsed.to } : {}),
+    ...(parsed.from !== undefined ? { [DATE_RANGE_BOUNDARY.FROM]: parsed.from } : {}),
+    ...(parsed.to !== undefined ? { [DATE_RANGE_BOUNDARY.TO]: parsed.to } : {}),
   };
 }
 
@@ -97,31 +101,45 @@ export function decodeFilterValue(parts: EncodedFilterParts, descriptor: FieldDe
   }
 }
 
-type ScalarRaw = string | boolean | undefined;
+type ScalarInput = string | boolean | undefined;
 
-function decodeText(raw: ScalarRaw): string | undefined {
-  const parsed = parseTextFilterValue(raw);
+function decodeText(inputValue: ScalarInput): string | undefined {
+  const parsed = parseTextFilterValue(inputValue);
   return parsed !== undefined && parsed !== "" ? parsed : undefined;
 }
 
-function decodeEnum(raw: ScalarRaw, options: readonly string[]): EnumFilterValue | undefined {
-  const parsed = parseTextFilterValue(raw);
+function decodeEnum(
+  inputValue: ScalarInput,
+  options: readonly string[],
+): EnumFilterValue | undefined {
+  const parsed = parseTextFilterValue(inputValue);
   if (parsed === undefined || parsed === "") return undefined;
   return options.includes(parsed) ? parsed : undefined;
 }
 
-function decodeBoolean(raw: ScalarRaw): BooleanFilterValue | undefined {
-  if (raw === true || raw === "1" || raw === "true") {
+function decodeBoolean(inputValue: ScalarInput): BooleanFilterValue | undefined {
+  if (
+    inputValue === true ||
+    inputValue === BOOLEAN_URL_VALUE.ONE ||
+    inputValue === BOOLEAN_URL_VALUE.TRUE
+  ) {
     return parseBooleanFilterValue(true);
   }
-  if (raw === false || raw === "0" || raw === "false") {
+  if (
+    inputValue === false ||
+    inputValue === BOOLEAN_URL_VALUE.ZERO ||
+    inputValue === BOOLEAN_URL_VALUE.FALSE
+  ) {
     return parseBooleanFilterValue(false);
   }
   return undefined;
 }
 
-function decodeTags(raw: ScalarRaw, options: readonly string[]): TagsFilterValue | undefined {
-  const parsed = parseTextFilterValue(raw);
+function decodeTags(
+  inputValue: ScalarInput,
+  options: readonly string[],
+): TagsFilterValue | undefined {
+  const parsed = parseTextFilterValue(inputValue);
   if (parsed === undefined || parsed === "") return undefined;
   const parts = parsed
     .split(",")
@@ -134,14 +152,14 @@ function decodeTags(raw: ScalarRaw, options: readonly string[]): TagsFilterValue
 
 function decodeNumberRange(parts: EncodedFilterParts): NumberRangeFilterValue | undefined {
   return parseNumberRangeFilterValue({
-    min: parts.min,
-    max: parts.max,
+    [NUMBER_RANGE_BOUNDARY.MINIMUM]: parts.min,
+    [NUMBER_RANGE_BOUNDARY.MAXIMUM]: parts.max,
   });
 }
 
 function decodeDateRange(parts: EncodedFilterParts): DateRangeFilterValue | undefined {
   return parseDateRangeFilterValue({
-    from: parts.from,
-    to: parts.to,
+    [DATE_RANGE_BOUNDARY.FROM]: parts.from,
+    [DATE_RANGE_BOUNDARY.TO]: parts.to,
   });
 }

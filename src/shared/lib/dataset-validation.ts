@@ -12,8 +12,9 @@ export class DatasetValidationError extends Error {
   }
 }
 
-export function parseDataset<T>(schema: z.ZodType<T>, raw: unknown, entity: string): T {
-  const result = schema.safeParse(raw);
+export function parseDataset<T>(schema: z.ZodType<T>, payload: unknown, entity: string): T {
+  const result = schema.safeParse(payload);
+
   if (!result.success) {
     throw new DatasetValidationError(entity, result.error);
   }

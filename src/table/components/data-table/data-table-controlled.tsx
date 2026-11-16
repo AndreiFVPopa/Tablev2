@@ -29,8 +29,8 @@ export function DataTableControlled<TData extends RowData>({
 
   return (
     <LabelsProvider value={resolvedLabels}>
-      <div className={styles.wrapper}>
-        <table className={styles.table} aria-label={resolvedLabels.tableLandmark}>
+      <div className={styles.dataTable}>
+        <table className={styles.dataTable__table} aria-label={resolvedLabels.tableLandmark}>
           <TableHeader table={table} />
           <TableBody
             table={table}

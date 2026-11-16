@@ -20,7 +20,7 @@ export interface UseDataTableOptions<TData extends RowData> {
   readonly schema: z.ZodType;
   readonly data: readonly TData[];
   readonly state: DataTableState;
-  readonly onStateChange: (next: DataTableState) => void;
+  readonly onStateChange: (nextState: DataTableState) => void;
   readonly labels?: Partial<TableLabels>;
 }
 export interface UseDataTableResult<TData extends RowData> {
@@ -41,25 +41,27 @@ export function useDataTable<TData extends RowData>({
     return buildColumnsFromDescriptors<TData>(fields);
   }, [schema]);
   const updatePagination = (updater: Updater<PaginationState>): void => {
-    const next = typeof updater === "function" ? updater(state.pagination) : updater;
-    const pageSizeChanged = next.pageSize !== state.pagination.pageSize;
+    const nextPagination = typeof updater === "function" ? updater(state.pagination) : updater;
+    const pageSizeChanged = nextPagination.pageSize !== state.pagination.pageSize;
     onStateChange({
       ...state,
-      pagination: pageSizeChanged ? { ...next, pageIndex: 0 } : next,
+      pagination: pageSizeChanged ? { ...nextPagination, pageIndex: 0 } : nextPagination,
     });
   };
   const updateSorting = (updater: Updater<SortingState>): void => {
-    const next = typeof updater === "function" ? updater(state.sorting) : updater;
-    onStateChange({ ...state, sorting: next });
+    const nextSorting = typeof updater === "function" ? updater(state.sorting) : updater;
+    onStateChange({ ...state, sorting: nextSorting });
   };
   const updateColumnFilters = (updater: Updater<ColumnFiltersState>): void => {
-    const next = typeof updater === "function" ? updater(state.columnFilters) : updater;
+    const nextColumnFilters =
+      typeof updater === "function" ? updater(state.columnFilters) : updater;
     onStateChange({
       ...state,
-      columnFilters: next,
+      columnFilters: nextColumnFilters,
       pagination: { ...state.pagination, pageIndex: 0 },
     });
   };
+
   const table = useTable({
     features: TABLE_FEATURES,
     data,

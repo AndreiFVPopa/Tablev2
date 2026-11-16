@@ -12,7 +12,8 @@ export interface DataTableBaseProps<TData extends RowData> {
 
 export type DataTableControlledProps<TData extends RowData> = DataTableBaseProps<TData> & {
   readonly state: DataTableState;
-  readonly onStateChange: (next: DataTableState) => void;
+  readonly onStateChange: (nextState: DataTableState) => void;
+
   readonly urlNamespace?: never;
 };
 

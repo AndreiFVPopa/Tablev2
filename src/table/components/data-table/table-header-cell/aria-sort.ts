@@ -1,12 +1,13 @@
-import type { SortDirection } from "@tanstack/react-table";
+import { ARIA_SORT, SORT_DIRECTION } from "../../sort-button/sort-direction.constants";
 
-export type AriaSortAttribute = NonNullable<React.AriaAttributes["aria-sort"]>;
+import type { AriaSortValue } from "../../sort-button/sort-direction.constants";
+import type { SortDirection } from "@tanstack/react-table";
 
 export function ariaSortFor(
   direction: false | SortDirection,
   canSort: boolean,
-): AriaSortAttribute | undefined {
-  if (direction === "asc") return "ascending";
-  if (direction === "desc") return "descending";
-  return canSort ? "none" : undefined;
+): AriaSortValue | undefined {
+  if (direction === SORT_DIRECTION.ASCENDING) return ARIA_SORT.ASCENDING;
+  if (direction === SORT_DIRECTION.DESCENDING) return ARIA_SORT.DESCENDING;
+  return canSort ? ARIA_SORT.NONE : undefined;
 }

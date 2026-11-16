@@ -1,3 +1,5 @@
+import { SORT_DIRECTION } from "./sort-direction.constants";
+
 import type { ColumnSortState } from "./sort-button.types";
 import type { TableFeaturesConfig } from "@table/lib/table-features";
 import type { FieldDescriptor } from "@table/schema/index";
@@ -12,8 +14,8 @@ export function resolveHeaderTitle<TData extends RowData>(
 }
 
 export function directionGlyph(direction: ColumnSortState): string {
-  if (direction === "asc") return " ▲";
-  if (direction === "desc") return " ▼";
+  if (direction === SORT_DIRECTION.ASCENDING) return " ▲";
+  if (direction === SORT_DIRECTION.DESCENDING) return " ▼";
   return " ↕";
 }
 
@@ -22,6 +24,6 @@ export function nextSortAction(
   labels: Pick<TableLabels, "sortAscending" | "sortDescending" | "sortClear">,
 ): string {
   if (direction === false) return labels.sortAscending;
-  if (direction === "asc") return labels.sortDescending;
+  if (direction === SORT_DIRECTION.ASCENDING) return labels.sortDescending;
   return labels.sortClear;
 }

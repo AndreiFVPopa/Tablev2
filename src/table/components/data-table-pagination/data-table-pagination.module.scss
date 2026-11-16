@@ -1,54 +1,55 @@
-$border: #c7cbd1;
-$muted: #6b7280;
-$focus: #4a7cff;
-
 .pagination {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
+  gap: var(--table-space-3) var(--table-space-4);
   align-items: center;
   justify-content: space-between;
+  color: var(--table-color-text);
 }
 
-.pageSizeGroup label {
-  display: inline-flex;
-  gap: 0.5rem;
-  align-items: center;
+.pagination__pageSize {
+  label {
+    display: inline-flex;
+    gap: var(--table-space-2);
+    align-items: center;
+  }
 }
 
-.pageSizeSelect {
-  padding: 0.15rem 0.25rem;
+.pagination__pageSizeSelect {
+  padding: 0.15rem var(--table-space-1);
   font: inherit;
-  border: 1px solid $border;
-  border-radius: 4px;
-  background: #fff;
+  border: var(--table-border-width) solid var(--table-color-border);
+  border-radius: var(--table-radius-md);
+  background: var(--table-control-bg);
+  color: inherit;
 
   &:focus-visible {
-    outline: 2px solid $focus;
+    outline: 2px solid var(--table-color-focus);
     outline-offset: 1px;
   }
 }
 
-.summary {
-  color: $muted;
+.pagination__summary {
+  color: var(--table-color-text-muted);
   font-variant-numeric: tabular-nums;
 }
 
-.pageControls {
+.pagination__controls {
   display: inline-flex;
-  gap: 0.25rem;
+  gap: var(--table-space-1);
   align-items: center;
 
   button {
     min-width: 2rem;
-    padding: 0.2rem 0.5rem;
-    background: #fff;
-    border: 1px solid $border;
-    border-radius: 4px;
+    padding: 0.2rem var(--table-space-2);
+    background: var(--table-control-bg);
+    border: var(--table-border-width) solid var(--table-color-border);
+    border-radius: var(--table-radius-md);
+    color: inherit;
     cursor: pointer;
 
     &:focus-visible {
-      outline: 2px solid $focus;
+      outline: 2px solid var(--table-color-focus);
       outline-offset: 2px;
     }
 
@@ -59,6 +60,6 @@ $focus: #4a7cff;
   }
 }
 
-.pageOf {
+.pagination__pageOf {
   font-variant-numeric: tabular-nums;
 }

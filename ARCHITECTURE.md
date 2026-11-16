@@ -6,8 +6,7 @@
 src/
   app/        Shell, providers, router, routes.      Imports: anything except mocks.
   features/
-    students/ Feature page and its schema/api/ui.    Imports: table, shared.
-    products/ Feature page and its schema/api/ui.    Imports: table, shared.
+    students/ Sole demo feature (Elevi).             Imports: table, shared, mocks.
   table/      Reusable schema-driven table.          Imports (peer deps only):
     schema/     Pure Zod interpreter.                  react/DOM/router/table forbidden; Zod allowed.
     url/        Pure URL encode/decode + route helper. react/DOM/router/table forbidden; Zod allowed.
@@ -31,7 +30,7 @@ src/
     table-labels.ts
     index.ts                   Public barrel (consumers only)
   shared/     Generic lib and UI.                    Imports: table.
-  mocks/      Fixtures and request handlers.         Imports: anything except app.
+  mocks/      Local JSON fixtures only.              Imports: anything except app.
   types/      Ambient *.d.ts declarations.           Imports: nothing.
 e2e/          Playwright browser tests.
 docs/         Repository documentation (this file and friends).
@@ -41,22 +40,20 @@ docs/         Repository documentation (this file and friends).
 
 Enforced by both `.fallowrc.jsonc` boundaries and ESLint `no-restricted-imports` so violations fail before they reach `main`.
 
-| From \\ To   | app | table | shared | students | products | mocks | types |
-| ------------ | --- | ----- | ------ | -------- | -------- | ----- | ----- |
-| **app**      | —   | ✅    | ✅     | ✅       | ✅       | ✖     | type  |
-| **table**    | ✖   | —     | ✖      | ✖        | ✖        | ✖     | type  |
-| **shared**   | ✖   | ✅    | —      | ✖        | ✖        | ✖     | type  |
-| **students** | ✖   | ✅    | ✅     | —        | ✖        | ✅    | type  |
-| **products** | ✖   | ✅    | ✅     | ✖        | —        | ✅    | type  |
-| **mocks**    | ✖   | ✅    | ✅     | ✅       | ✅       | —     | type  |
-| **types**    | ✖   | ✖     | ✖      | ✖        | ✖        | ✖     | —     |
+| From \\ To   | app | table | shared | students | mocks | types |
+| ------------ | --- | ----- | ------ | -------- | ----- | ----- |
+| **app**      | —   | ✅    | ✅     | ✅       | ✖     | type  |
+| **table**    | ✖   | —     | ✖      | ✖        | ✖     | type  |
+| **shared**   | ✖   | ✅    | —      | ✖        | ✖     | type  |
+| **students** | ✖   | ✅    | ✅     | —        | ✅    | type  |
+| **mocks**    | ✖   | ✅    | ✅     | ✅       | —     | type  |
+| **types**    | ✖   | ✖     | ✖      | ✖        | ✖     | —     |
 
 Additional policies:
 
-- `src/table/**` accepts a short, deliberate list of peer dependencies: `react`, `@tanstack/react-table`, `@tanstack/react-router`, `zod`. It must **not** import `@tanstack/react-query`; data arrives as a prop.
+- `src/table/**` accepts a short, deliberate list of peer dependencies: `react`, `@tanstack/react-table`, `@tanstack/react-router`, `zod`. It must **not** import `@tanstack/react-query`, fixtures, or HTTP clients; data arrives as a prop.
 - `src/table/schema/**` and `src/table/url/**` are pure TypeScript: no `react`, `react-dom`, `@tanstack/react-table`, or `@tanstack/react-router` imports. Zod is allowed. Router hooks live in `src/table/hooks/` and `src/table/components/`.
-- `fetch()` is not allowed in `src/table`, `src/features/students`, or `src/features/products`. Request modules in `*/api/*.requests.ts` own HTTP.
-- `**/api/**/*.ts` may not import components (`**/*.tsx` or `**/components/**`).
+- `fetch()` is not allowed in `src/table` or `src/features/students`. The demo is fixture-only; host apps may fetch outside those zones and pass rows to `<DataTable>`.
 - `boundaries.coverage.requireAllFiles: true` makes new files fail analysis until they land in a zone, so nothing silently escapes the policy.
 
 ## URL state is owned by TanStack Router
@@ -116,37 +113,42 @@ Covered by `src/table/url/codec.test.ts` and `src/table/hooks/use-data-table-url
 7. Two tables with distinct `urlNamespace` values coexist on the same route.
 8. A static import scan proves `src/table/**` has no application-specific imports.
 
-## Data flow (target state)
+## Data flow
 
-1. A feature page composes its Zod schema and query.
+1. A feature `*.dataset.ts` imports a raw JSON fixture from `src/mocks/**` and validates it once with `parseDataset` against the domain dataset schema.
 2. The hosting route composes `composeTableSearchValidator(schema)` with any route-specific search validation.
-3. TanStack Query loads data through a request module. The request parses JSON as `unknown` and validates it against the Zod schema.
-4. The validated data and the schema are passed into `<DataTable>`.
-5. The table derives columns, filter UI, and sorting from the schema.
-6. The table reads and writes URL search state through TanStack Router hooks — no shadow state, no `useEffect`-based URL sync.
+3. The feature page passes the validated dataset and schema into `<DataTable schema={…} data={…} />`.
+4. The table derives columns, filter UI, and sorting from the schema.
+5. The table reads and writes URL search state through TanStack Router hooks — no shadow state, no `useEffect`-based URL sync.
 
-Phase 1 ships the shell and the directory policy. Phase 2 ships the pure schema interpreter under `src/table/schema/`. Phase 3 ships the controlled `<DataTable>` UI. Phase 4 ships the router-backed URL codec and hooks. Phase 5 ships domain schemas, fixture/HTTP request modules, TanStack Query options, and the `/elevi` + `/produse` routes.
+There is no demo HTTP client, data-source switch, or TanStack Query layer. Node.js remains required for Vite, pnpm, tests, and the production build — not as an application backend.
 
-## Feature data loading (Phase 5)
+Phase 1 shipped the shell and directory policy. Phase 2 shipped the pure schema interpreter. Phase 3 shipped the controlled `<DataTable>` UI. Phase 4 shipped the router-backed URL codec and hooks. Phase 5 shipped domain schemas and fixtures (v0.1.0 included Students + Products; v0.2.0 keeps Students/`/elevi` only). Phase 6 verified portability.
 
-- Domain contracts live in `src/features/{students,products}/*.{schema,types,constants}.ts`. Types are derived with `z.output`; dates use `z.coerce.date()` so JSON string fixtures validate without weakening the interpreter's `ZodDate` kind.
-- Fixtures under `src/mocks/**` stay raw `unknown`. Request modules (`*.requests.ts`) choose fixture vs HTTP via `resolveDataSource()` / `VITE_DATA_SOURCE`, then `parseDataset` validates the whole payload (no silent drops). HTTP goes through `shared/api/http.getJson` so features never call `fetch`.
-- Query options (`*.queries.ts`) wrap request functions with TanStack Query. Pages render loading / error / empty (via DataTable) and pass `<DataTable schema={…} data={…} />`.
-- Routes under `src/app/routes/` plug `composeTableSearchValidator(schema)` into `validateSearch`. `QueryClientProvider` lives on the root route.
+## Feature data loading
+
+- Domain contracts live in `src/features/students/*.{schema,types,constants}.ts`. Types are derived with `z.output`; dates use `z.coerce.date()` so JSON string fixtures validate without weakening the interpreter's `ZodDate` kind.
+- Fixtures under `src/mocks/**` stay raw `unknown` (typed ambient). `students.dataset.ts` calls `parseDataset` once and exports a typed `StudentsDataset` (no silent drops).
+- The Elevi page renders `<DataTable schema={studentSchema} data={studentsDataset} />` with no loading or network-error UI.
+- Routes under `src/app/routes/` plug `composeTableSearchValidator(schema)` into `validateSearch`. `/` redirects to `/elevi`.
 
 ## Portability and URL authority (Phase 6)
 
-- `src/table/` must remain copy-paste portable. Accepted peers: `react`, `@tanstack/react-table`, `@tanstack/react-router`, `zod` (+ SCSS Modules). No `@tanstack/react-query`.
+- `src/table/` must remain copy-paste portable. Accepted peers: `react`, `@tanstack/react-table`, `@tanstack/react-router`, `zod` (+ SCSS Modules). No `@tanstack/react-query`, HTTP clients, or fixture imports.
 - Default page size is shared via `src/table/lib/page-sizes.ts` (`DEFAULT_PAGE_SIZE = 25`, `DEFAULT_PAGE_SIZES`, `resolveDefaultPageSize`) so `composeTableSearchValidator` and URL-backed `DataTable` stay aligned.
 - URL-backed tables set `autoResetPageIndex: false` so TanStack Table cannot overwrite URL-authoritative pagination after sort/filter prop updates.
 - Controlled mode (`state` + `onStateChange`) and URL mode remain mutually exclusive (XOR props).
+- Table design tokens live in `src/table/styles/tokens.scss` (`--table-*` on `:root`). The table never imports `src/app/styles/**`. Host apps override `--table-*` CSS variables for theming.
+
+- App chrome tokens (`src/app/styles/tokens.scss`) use foundation roles `top`, `main`, `secondary`, and `accent`. Component SCSS Modules use BEM; Vite maps locals to camelCase for TypeScript.
 
 ## Schema interpreter (Phase 2)
 
 `src/table/schema/` turns any Zod v4 object schema into a stable, framework-agnostic shape the table, filters, sorting, and URL codec can share.
 
 - `descriptors.ts` — public types: `FieldKind` (`text | numeric | boolean | enum | date | tags`), the `FieldDescriptor` discriminated union, `FieldWrappers` (optional / nullable / default / readonly), `ResolvedFieldMeta` (title / description / deprecated / hidden), diagnostic types, and the capability helpers `isSortableKind` and `defaultFilterKind`. Augments Zod v4's `GlobalMeta` with an opt-in `table?: TableFieldMeta` key read via `schema.meta()`.
-- `interpret.ts` — exposes one function: `interpretSchema(schema, options?) → { fields, diagnostics }`. Uses only public, non-deprecated Zod v4 APIs (`instanceof z.ZodString/Number/…`, `schema.shape`, `schema.element`, `schema.options`, `schema.unwrap()`, `schema.minLength` / `maxLength` / `minValue` / `maxValue` / `format`, `schema.meta()`). Never touches `_def` / `_zod` and never suppresses a deprecation diagnostic. See "Zod v4 date-bounds limitation" below.
+- `interpret.ts` — exposes `interpretSchema(schema, options?) → { fields, diagnostics }` and orchestrates object walking. Leaf construction lives in `build-leaf-descriptor.ts`, wrapper peeling in `unwrap-schema.ts`, metadata resolution in `resolve-field-meta.ts`. Uses only public, non-deprecated Zod v4 APIs (`instanceof z.ZodString/Number/…`, `schema.shape`, `schema.element`, `schema.options`, `schema.unwrap()`, `schema.minLength` / `maxLength` / `minValue` / `maxValue` / `format`, `schema.meta()`). Zod v4 `unwrap()` / `element` return core `$ZodType`; `toClassicZodType` is the single bridge back to classic `z.ZodType`. Never touches `_def` / `_zod` and never suppresses a deprecation diagnostic. See "Zod v4 date-bounds limitation" below.
+
 - `index.ts` — barrel; re-exported through `src/table/index.ts` so consumers import from `@/table`.
 
 Rules:
@@ -174,7 +176,7 @@ When Zod ships a public replacement (or we are explicitly approved to consume `_
 
 ## DataTable component (Phase 3)
 
-`src/table/components/data-table.tsx` ships the reusable, schema-driven `<DataTable>` the two demo features will consume in Phase 5. Phase 3 shipped it as a fully controlled component; Phase 4 wrapped that contract with optional URL-backed mode so the public call site is `<DataTable schema={schema} data={data} />`.
+`src/table/components/data-table.tsx` ships the reusable, schema-driven `<DataTable>` consumed by the Elevi demo. Phase 3 shipped it as a fully controlled component; Phase 4 wrapped that contract with optional URL-backed mode so the public call site is `<DataTable schema={schema} data={data} />`.
 
 ### Public API (barrel: `src/table/index.ts`)
 

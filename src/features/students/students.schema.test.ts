@@ -1,20 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import { loadStudentsFixture } from "@mocks/students/load-students-fixture";
+import studentsFixture from "@mocks/students/students.fixture.json";
+import { isRecord } from "@shared/lib/assert";
 import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
 import { interpretSchema } from "@table/schema/interpret";
 
 import { studentSchema, studentsDatasetSchema } from "./students.schema";
 
-function isPlainRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function asRecordArray(raw: unknown): Record<string, unknown>[] {
-  if (!Array.isArray(raw)) throw new Error("expected array fixture");
+function asRecordArray(payload: unknown): Record<string, unknown>[] {
+  if (!Array.isArray(payload)) throw new Error("expected array fixture");
   const rows: Record<string, unknown>[] = [];
-  for (const row of raw) {
-    if (!isPlainRecord(row)) throw new Error("expected object row");
+  for (const row of payload) {
+    if (!isRecord(row)) throw new Error("expected object row");
     rows.push({ ...row });
   }
   return rows;
@@ -22,7 +19,7 @@ function asRecordArray(raw: unknown): Record<string, unknown>[] {
 
 describe("studentSchema", () => {
   it("validates the fixture and coerces enrolledAt to Date", () => {
-    const result = studentsDatasetSchema.safeParse(loadStudentsFixture());
+    const result = studentsDatasetSchema.safeParse(studentsFixture);
     expect(result.success).toBe(true);
     if (!result.success) return;
     expect(result.data).toHaveLength(24);
@@ -32,7 +29,7 @@ describe("studentSchema", () => {
   });
 
   it("rejects invalid records instead of dropping them", () => {
-    const rows = asRecordArray(loadStudentsFixture());
+    const rows = asRecordArray(studentsFixture);
     const first = rows[0];
     if (first === undefined) throw new Error("expected at least one row");
     const invalid = [{ ...first, age: 99 }, ...rows.slice(1)];
