@@ -14,6 +14,7 @@
     "playwright.config.ts",
     "eslint.config.ts",
     "stylelint.config.js",
+    "scripts/**/*.ts",
     "src/types/**/*.d.ts"
   ]
 }
