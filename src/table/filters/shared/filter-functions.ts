@@ -7,7 +7,7 @@ import {
   parseTextFilterValue,
 } from "./parse-filter-value";
 
-import type { TableFeaturesConfig } from "../lib/table-features";
+import type { TableFeaturesConfig } from "../../lib/table-features";
 import type {
   BooleanFilterValue,
   DateRangeFilterValue,

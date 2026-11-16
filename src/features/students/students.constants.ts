@@ -9,6 +9,16 @@ export const STUDENT_GRADES = {
   XII: "XII",
 } as const;
 
+export const STUDENT_GENDER = {
+  MALE: "male",
+  FEMALE: "female",
+} as const;
+
+export const STUDENT_GENDER_LABELS = {
+  [STUDENT_GENDER.MALE]: "Masculin",
+  [STUDENT_GENDER.FEMALE]: "Feminin",
+} as const;
+
 export const STUDENT_TAGS = {
   BURSA: "bursă",
   OLIMPIC: "olimpic",

@@ -1,12 +1,6 @@
 export { interpretSchema, SchemaInterpretationError } from "./interpret";
 export type { InterpretOptions } from "./interpret";
-export {
-  DIAGNOSTIC_CODES,
-  FIELD_KINDS,
-  FILTER_KINDS,
-  defaultFilterKind,
-  isSortableKind,
-} from "./descriptors";
+export { DIAGNOSTIC_CODES, FIELD_KINDS } from "./descriptors";
 export type {
   BooleanFieldDescriptor,
   DateFieldDescriptor,
@@ -16,7 +10,6 @@ export type {
   FieldDescriptor,
   FieldKind,
   FieldWrappers,
-  FilterKind,
   InterpretationResult,
   NumericFieldDescriptor,
   ResolvedFieldMeta,
@@ -24,3 +17,8 @@ export type {
   TagsFieldDescriptor,
   TextFieldDescriptor,
 } from "./descriptors";
+export { URL_VALUE_ENCODINGS } from "./url-value-encoding.constants";
+export type { UrlValueEncoding } from "./url-value-encoding.constants";
+export { resolveOptionUrlEncoding } from "./option-encoding-config";
+export type { OptionUrlEncodingIssue } from "./option-encoding-config";
+export { toUrlSlug } from "@table/lib/to-url-slug";

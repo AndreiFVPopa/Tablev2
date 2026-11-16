@@ -3,7 +3,7 @@ import { useLabels } from "@table/components/labels-context";
 import { NUMBER_RANGE_BOUNDARY, type NumberRangeBoundary } from "./number-range-boundary.constants";
 import { parseNumericBoundary } from "./parse-numeric-boundary";
 
-import type { NumberRangeFilterValue } from "../filter-values.types";
+import type { NumberRangeFilterValue } from "../shared/filter-values.types";
 import type { NumberRangeFilterProps } from "./number-range-filter.types";
 
 export function useNumberRangeFilter({ descriptor, value, onChange }: NumberRangeFilterProps): {

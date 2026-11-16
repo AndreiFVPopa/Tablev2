@@ -1,6 +1,6 @@
 import { useLabels } from "@table/components/labels-context";
 
-import styles from "../filters.module.scss";
+import styles from "../shared/filters.module.scss";
 
 import { ENUM_FILTER_ALL_OPTION } from "./enum-filter.constants";
 
@@ -28,7 +28,7 @@ export function EnumFilter({ descriptor, value, onChange }: EnumFilterProps): Re
         <option value={ENUM_FILTER_ALL_OPTION}>{labels.filterEnumAll}</option>
         {descriptor.options.map((option) => (
           <option key={option} value={option}>
-            {option}
+            {descriptor.meta.optionLabels?.[option] ?? option}
           </option>
         ))}
       </select>

@@ -132,12 +132,12 @@ Prefer names that communicate responsibility:
 
 Avoid meaningless abbreviations and one-letter identifiers except conventional locals (`id`, `key`, index in a tight loop). Do not rename clear contextual names such as `row`, `column`, `schema`, `value`, or `index` merely to lengthen them.
 
-Public API names stay stable unless a rename is necessary and documented. British spelling in the codec (`canonicaliseSearch`) is intentional.
+Public API names stay stable unless a rename is necessary and documented. British spelling in the codec (`canonicaliseSearch`) is intentional. Schema owns encoding _configuration_ (`resolveOptionUrlEncoding` / `toUrlSlug`); `url/option-encoding.ts` owns token encode/decode. Sort tokens use `encodeSort` / `decodeSort`.
 
 ## Styles
 
 - SCSS Modules colocated with the component that owns them.
-- Shared filter chrome may live as `src/table/filters/filters.module.scss` when several filter widgets share the same classes.
+- Shared filter chrome lives as `src/table/filters/shared/filters.module.scss` when several filter widgets share the same classes.
 - Class names follow BEM with camelCase identifiers so CSS Modules and Fallow can track `styles.block__element` as a JS member: `block`, `block__element`, `block--modifier`. Examples: `dataTable`, `dataTable__empty`, `appShell__navLink`, `filter__textInput`.
 - Stylelint enforces that pattern; do not weaken nesting or `!important` rules to paper over specificity issues.
 

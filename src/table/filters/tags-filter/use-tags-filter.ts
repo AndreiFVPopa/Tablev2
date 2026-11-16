@@ -5,6 +5,7 @@ import type { TagsFilterProps } from "./tags-filter.types";
 export function useTagsFilter({ descriptor, value, onChange }: TagsFilterProps): {
   readonly selectedTags: readonly string[];
   readonly options: readonly string[];
+  readonly optionLabels: Readonly<Record<string, string>> | undefined;
   readonly legend: string;
   readonly handleTagToggle: (option: string) => () => void;
 } {
@@ -21,6 +22,7 @@ export function useTagsFilter({ descriptor, value, onChange }: TagsFilterProps):
   return {
     selectedTags,
     options: descriptor.options,
+    optionLabels: descriptor.meta.optionLabels,
     legend: `${labels.filterLabelPrefix} ${descriptor.meta.title}`,
     handleTagToggle,
   };

@@ -13,7 +13,8 @@
       "city": "Cluj-Napoca",
       "county": "Cluj"
     },
-    "notes": null
+    "notes": null,
+    "gender": "female"
   },
   {
     "id": "stu-002",
@@ -29,7 +30,8 @@
       "city": "Sibiu",
       "county": "Sibiu"
     },
-    "notes": "Observație 2"
+    "notes": "Observație 2",
+    "gender": "male"
   },
   {
     "id": "stu-003",
@@ -45,7 +47,8 @@
       "city": "Brașov",
       "county": "Brașov"
     },
-    "notes": "Observație 3"
+    "notes": "Observație 3",
+    "gender": "female"
   },
   {
     "id": "stu-004",
@@ -61,7 +64,8 @@
       "city": "Timișoara",
       "county": "Timiș"
     },
-    "notes": "Observație 4"
+    "notes": "Observație 4",
+    "gender": "male"
   },
   {
     "id": "stu-005",
@@ -77,7 +81,8 @@
       "city": "Iași",
       "county": "Iași"
     },
-    "notes": null
+    "notes": null,
+    "gender": "female"
   },
   {
     "id": "stu-006",
@@ -93,7 +98,8 @@
       "city": "Oradea",
       "county": "Bihor"
     },
-    "notes": "Observație 6"
+    "notes": "Observație 6",
+    "gender": "male"
   },
   {
     "id": "stu-007",
@@ -108,7 +114,8 @@
     "address": {
       "city": "Constanța",
       "county": "Constanța"
-    }
+    },
+    "gender": "female"
   },
   {
     "id": "stu-008",
@@ -124,7 +131,8 @@
       "city": "Craiova",
       "county": "Dolj"
     },
-    "notes": "Observație 8"
+    "notes": "Observație 8",
+    "gender": "male"
   },
   {
     "id": "stu-009",
@@ -140,7 +148,8 @@
       "city": "Cluj-Napoca",
       "county": "Cluj"
     },
-    "notes": null
+    "notes": null,
+    "gender": "female"
   },
   {
     "id": "stu-010",
@@ -156,7 +165,8 @@
       "city": "Sibiu",
       "county": "Sibiu"
     },
-    "notes": "Observație 10"
+    "notes": "Observație 10",
+    "gender": "male"
   },
   {
     "id": "stu-011",
@@ -172,7 +182,8 @@
       "city": "Brașov",
       "county": "Brașov"
     },
-    "notes": "Observație 11"
+    "notes": "Observație 11",
+    "gender": "female"
   },
   {
     "id": "stu-012",
@@ -188,7 +199,8 @@
       "city": "Timișoara",
       "county": "Timiș"
     },
-    "notes": "Observație 12"
+    "notes": "Observație 12",
+    "gender": "male"
   },
   {
     "id": "stu-013",
@@ -204,7 +216,8 @@
       "city": "Iași",
       "county": "Iași"
     },
-    "notes": null
+    "notes": null,
+    "gender": "male"
   },
   {
     "id": "stu-014",
@@ -220,7 +233,8 @@
       "city": "Oradea",
       "county": "Bihor"
     },
-    "notes": "Observație 14"
+    "notes": "Observație 14",
+    "gender": "male"
   },
   {
     "id": "stu-015",
@@ -236,7 +250,8 @@
       "city": "Constanța",
       "county": "Constanța"
     },
-    "notes": "Observație 15"
+    "notes": "Observație 15",
+    "gender": "female"
   },
   {
     "id": "stu-016",
@@ -252,7 +267,8 @@
       "city": "Craiova",
       "county": "Dolj"
     },
-    "notes": "Observație 16"
+    "notes": "Observație 16",
+    "gender": "male"
   },
   {
     "id": "stu-017",
@@ -268,7 +284,8 @@
       "city": "Cluj-Napoca",
       "county": "Cluj"
     },
-    "notes": null
+    "notes": null,
+    "gender": "female"
   },
   {
     "id": "stu-018",
@@ -284,7 +301,8 @@
       "city": "Sibiu",
       "county": "Sibiu"
     },
-    "notes": "Observație 18"
+    "notes": "Observație 18",
+    "gender": "male"
   },
   {
     "id": "stu-019",
@@ -299,7 +317,8 @@
     "address": {
       "city": "Brașov",
       "county": "Brașov"
-    }
+    },
+    "gender": "male"
   },
   {
     "id": "stu-020",
@@ -315,7 +334,8 @@
       "city": "Timișoara",
       "county": "Timiș"
     },
-    "notes": "Observație 20"
+    "notes": "Observație 20",
+    "gender": "male"
   },
   {
     "id": "stu-021",
@@ -331,7 +351,8 @@
       "city": "Iași",
       "county": "Iași"
     },
-    "notes": null
+    "notes": null,
+    "gender": "male"
   },
   {
     "id": "stu-022",
@@ -347,7 +368,8 @@
       "city": "Oradea",
       "county": "Bihor"
     },
-    "notes": "Observație 22"
+    "notes": "Observație 22",
+    "gender": "male"
   },
   {
     "id": "stu-023",
@@ -363,7 +385,8 @@
       "city": "Constanța",
       "county": "Constanța"
     },
-    "notes": "Observație 23"
+    "notes": "Observație 23",
+    "gender": "male"
   },
   {
     "id": "stu-024",
@@ -379,6 +402,7 @@
       "city": "Craiova",
       "county": "Dolj"
     },
-    "notes": "Observație 24"
+    "notes": "Observație 24",
+    "gender": "male"
   }
 ]

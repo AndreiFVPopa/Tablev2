@@ -241,6 +241,7 @@ const config = tseslint.config(
       "vite.config.ts",
       "vitest.config.ts",
       "playwright.config.ts",
+      "scripts/**/*.ts",
     ],
     languageOptions: {
       globals: { ...globals.node },

@@ -3,11 +3,11 @@ export type { TablePeerDependency } from "./package-info";
 export {
   DIAGNOSTIC_CODES,
   FIELD_KINDS,
-  FILTER_KINDS,
   interpretSchema,
   SchemaInterpretationError,
-  isSortableKind,
-  defaultFilterKind,
+  URL_VALUE_ENCODINGS,
+  resolveOptionUrlEncoding,
+  toUrlSlug,
 } from "./schema/index";
 export type {
   BooleanFieldDescriptor,
@@ -18,7 +18,6 @@ export type {
   FieldDescriptor,
   FieldKind,
   FieldWrappers,
-  FilterKind,
   InterpretationResult,
   InterpretOptions,
   NumericFieldDescriptor,
@@ -26,7 +25,15 @@ export type {
   TableFieldMeta,
   TagsFieldDescriptor,
   TextFieldDescriptor,
+  UrlValueEncoding,
+  OptionUrlEncodingIssue,
 } from "./schema/index";
+export {
+  decodeDescriptorOption,
+  decodeOptionFromUrlToken,
+  encodeDescriptorOption,
+  encodeOptionToUrlToken,
+} from "./url/option-encoding";
 export { DataTable, DEFAULT_PAGE_SIZES } from "./components/data-table";
 export type { DataTableProps } from "./components/data-table";
 export { createDefaultTableState } from "./lib/table-state";
@@ -42,7 +49,7 @@ export type {
   EnumFilterValue,
   NumberRangeFilterValue,
   TagsFilterValue,
-} from "./filters/filter-values.types";
+} from "./filters/shared/filter-values.types";
 export { composeTableSearchValidator } from "./url/compose-search-validator";
 export type { ComposeTableSearchValidatorOptions } from "./url/compose-search-validator";
 export { useDataTableUrlState } from "./hooks/use-data-table-url-state";

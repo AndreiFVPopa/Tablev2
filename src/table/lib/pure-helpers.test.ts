@@ -77,10 +77,16 @@ describe("formatValue", () => {
     expect(formatValue(false, d, DEFAULT_LABELS)).toBe("Nu");
     expect(formatValue(null, d, DEFAULT_LABELS)).toBe(DEFAULT_LABELS.cellEmpty);
   });
-  it("formats enum as the raw string", () => {
+  it("formats enum as the raw string, preferring optionLabels when present", () => {
     const d = descriptor("enum");
     expect(formatValue("done", d, DEFAULT_LABELS)).toBe("done");
     expect(formatValue(null, d, DEFAULT_LABELS)).toBe(DEFAULT_LABELS.cellEmpty);
+    const labeled: FieldDescriptor = {
+      ...d,
+      meta: { ...d.meta, optionLabels: { done: "Finalizat", new: "Nou" } },
+    };
+    expect(formatValue("done", labeled, DEFAULT_LABELS)).toBe("Finalizat");
+    expect(formatValue("new", labeled, DEFAULT_LABELS)).toBe("Nou");
   });
   it("formats dates with ro-RO locale and rejects invalid ones", () => {
     const d = descriptor("date");
@@ -88,12 +94,17 @@ describe("formatValue", () => {
     expect(formatValue(new Date("invalid"), d, DEFAULT_LABELS)).toBe(DEFAULT_LABELS.cellEmpty);
     expect(formatValue("2026-11-13", d, DEFAULT_LABELS)).toBe(DEFAULT_LABELS.cellEmpty);
   });
-  it("joins tags with comma, drops non-strings, falls back to empty", () => {
+  it("joins tags with comma, applies optionLabels, drops non-strings", () => {
     const d = descriptor("tags");
     expect(formatValue(["a", "b"], d, DEFAULT_LABELS)).toBe("a, b");
     expect(formatValue([], d, DEFAULT_LABELS)).toBe(DEFAULT_LABELS.cellEmpty);
     expect(formatValue([1, 2], d, DEFAULT_LABELS)).toBe(DEFAULT_LABELS.cellEmpty);
     expect(formatValue("nope", d, DEFAULT_LABELS)).toBe(DEFAULT_LABELS.cellEmpty);
+    const labeled: FieldDescriptor = {
+      ...d,
+      meta: { ...d.meta, optionLabels: { a: "Alpha", b: "Beta" } },
+    };
+    expect(formatValue(["a", "b", "c"], labeled, DEFAULT_LABELS)).toBe("Alpha, Beta, c");
   });
 });
 describe("createDefaultTableState", () => {

@@ -11,7 +11,8 @@
     "dev": "vite",
     "build": "tsc -b --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit",
+    "routes:generate": "jiti ./scripts/generate-route-tree.ts",
+    "typecheck": "pnpm run routes:generate && tsc -b --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "stylelint": "stylelint \"src/**/*.{scss,css}\"",
@@ -73,12 +74,6 @@
     "typescript-eslint": "8.72.2",
     "vite": "8.3.8",
     "vitest": "5.1.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "esbuild"
-    ]
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [

@@ -1,17 +1,20 @@
 import { describe, expect, it } from "vitest";
 
 import studentsFixture from "@mocks/students/students.fixture.json";
-import { isRecord } from "@shared/lib/assert";
+import { isPlainRecord } from "@table/lib/is-plain-record";
 import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
 import { interpretSchema } from "@table/schema/interpret";
+import { URL_VALUE_ENCODINGS } from "@table/schema/url-value-encoding.constants";
+import { decodeOptionFromUrlToken, encodeOptionToUrlToken } from "@table/url/option-encoding";
 
+import { STUDENT_GENDER, STUDENT_GENDER_LABELS, STUDENT_TAGS } from "./students.constants";
 import { studentSchema, studentsDatasetSchema } from "./students.schema";
 
 function asRecordArray(payload: unknown): Record<string, unknown>[] {
   if (!Array.isArray(payload)) throw new Error("expected array fixture");
   const rows: Record<string, unknown>[] = [];
   for (const row of payload) {
-    if (!isRecord(row)) throw new Error("expected object row");
+    if (!isPlainRecord(row)) throw new Error("expected object row");
     rows.push({ ...row });
   }
   return rows;
@@ -46,6 +49,7 @@ describe("studentSchema", () => {
     expect(byPath.email).toBe(FIELD_KINDS.TEXT);
     expect(byPath.age).toBe(FIELD_KINDS.NUMERIC);
     expect(byPath.grade).toBe(FIELD_KINDS.ENUM);
+    expect(byPath.gender).toBe(FIELD_KINDS.ENUM);
     expect(byPath.active).toBe(FIELD_KINDS.BOOLEAN);
     expect(byPath.enrolledAt).toBe(FIELD_KINDS.DATE);
     expect(byPath.gpa).toBe(FIELD_KINDS.NUMERIC);
@@ -59,7 +63,37 @@ describe("studentSchema", () => {
     const { fields } = interpretSchema(studentSchema);
     const titles = Object.fromEntries(fields.map((field) => [field.path, field.meta.title]));
     expect(titles.name).toBe("Nume");
+    expect(titles.gender).toBe("Gen");
     expect(titles.enrolledAt).toBe("Înscris");
     expect(titles["address.city"]).toBe("Oraș");
+  });
+
+  it("configures positional gender URL aliases and slug tags", () => {
+    const { fields, diagnostics } = interpretSchema(studentSchema);
+    expect(diagnostics).toEqual([]);
+    const gender = fields.find((field) => field.path === "gender");
+    expect(gender?.kind).toBe(FIELD_KINDS.ENUM);
+    if (gender?.kind !== FIELD_KINDS.ENUM) return;
+    expect(gender.meta.urlParam).toBe("gen");
+    expect(gender.meta.urlValueEncoding).toBe(URL_VALUE_ENCODINGS.POSITIONAL);
+    expect(
+      encodeOptionToUrlToken(STUDENT_GENDER.MALE, gender.options, gender.meta.urlValueEncoding),
+    ).toBe("1");
+    expect(
+      encodeOptionToUrlToken(STUDENT_GENDER.FEMALE, gender.options, gender.meta.urlValueEncoding),
+    ).toBe("2");
+    expect(gender.meta.optionLabels?.[STUDENT_GENDER.MALE]).toBe(
+      STUDENT_GENDER_LABELS[STUDENT_GENDER.MALE],
+    );
+    const tags = fields.find((field) => field.path === "tags");
+    expect(tags?.kind).toBe(FIELD_KINDS.TAGS);
+    if (tags?.kind !== FIELD_KINDS.TAGS) return;
+    expect(tags.meta.urlValueEncoding).toBe(URL_VALUE_ENCODINGS.SLUG);
+    expect(
+      encodeOptionToUrlToken(STUDENT_TAGS.BURSA, tags.options, tags.meta.urlValueEncoding),
+    ).toBe("bursa");
+    expect(decodeOptionFromUrlToken("bursa", tags.options, tags.meta.urlValueEncoding)).toBe(
+      STUDENT_TAGS.BURSA,
+    );
   });
 });

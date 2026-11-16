@@ -1,8 +1,7 @@
 import { z } from "zod";
 
 import { buildLeafDescriptor } from "./build-leaf-descriptor";
-import { describeSchema } from "./describe-schema";
-import { DIAGNOSTIC_CODES } from "./diagnostic-codes.constants";
+import { DIAGNOSTIC_CODES, type DiagnosticCode } from "./diagnostic-codes.constants";
 import { resolveFieldMeta } from "./resolve-field-meta";
 import { unwrapSchema } from "./unwrap-schema";
 
@@ -21,6 +20,11 @@ export class SchemaInterpretationError extends Error {
   }
 }
 
+const FATAL_DIAGNOSTIC_CODES: ReadonlySet<DiagnosticCode> = new Set([
+  DIAGNOSTIC_CODES.URL_VALUE_ENCODING_UNSUPPORTED,
+  DIAGNOSTIC_CODES.URL_SLUG_COLLISION,
+]);
+
 export function interpretSchema(
   schema: z.ZodType,
   options: InterpretOptions = {},
@@ -32,7 +36,7 @@ export function interpretSchema(
     diagnostics.push({
       code: DIAGNOSTIC_CODES.ROOT_NOT_OBJECT,
       path: "",
-      message: `Root schema must be z.object(...); got ${describeSchema(rootUnwrapped.inner)}`,
+      message: `Root schema must be z.object(...); got ${schemaTypeName(rootUnwrapped.inner)}`,
       hint: "Wrap your fields in z.object({ ... }) before passing them to the table.",
     });
     return finalize({ fields, diagnostics }, options);
@@ -84,7 +88,7 @@ function describeField(
     walkObject(inner, segments, fields, diagnostics);
     return;
   }
-  const meta = resolveFieldMeta(schema, segments);
+  const meta = resolveFieldMeta(schema, segments, diagnostics);
   const descriptor = buildLeafDescriptor(
     inner,
     {
@@ -107,7 +111,10 @@ function finalize(
   },
   options: InterpretOptions,
 ): InterpretationResult {
-  if (options.throwOnDiagnostics && result.diagnostics.length > 0) {
+  const hasFatalConfigIssue = result.diagnostics.some((issue) =>
+    FATAL_DIAGNOSTIC_CODES.has(issue.code),
+  );
+  if ((options.throwOnDiagnostics || hasFatalConfigIssue) && result.diagnostics.length > 0) {
     throw new SchemaInterpretationError(result.diagnostics);
   }
   return result;
@@ -118,4 +125,9 @@ function summarizeDiagnostics(diagnostics: readonly DiagnosticIssue[]): string {
     .map((issue) => `  [${issue.code}] ${issue.path || "<root>"}: ${issue.message}`)
     .join("\n");
   return `Schema interpretation produced ${String(diagnostics.length)} diagnostic(s):\n${bullets}`;
+}
+
+function schemaTypeName(schema: z.ZodType): string {
+  const constructorName = schema.constructor.name;
+  return constructorName.length > 0 ? constructorName : "<unknown schema>";
 }

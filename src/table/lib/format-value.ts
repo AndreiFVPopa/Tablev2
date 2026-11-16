@@ -19,8 +19,9 @@ export function formatValue(
 ): string {
   switch (descriptor.kind) {
     case FIELD_KINDS.TEXT:
-    case FIELD_KINDS.ENUM:
       return formatString(value, labels);
+    case FIELD_KINDS.ENUM:
+      return formatLabeledOption(value, descriptor.meta.optionLabels, labels);
     case FIELD_KINDS.NUMERIC:
       return formatNumber(value, labels);
     case FIELD_KINDS.BOOLEAN:
@@ -28,18 +29,27 @@ export function formatValue(
     case FIELD_KINDS.DATE:
       return formatDate(value, labels);
     case FIELD_KINDS.TAGS:
-      return formatTags(value, labels);
+      return formatTags(value, descriptor.meta.optionLabels, labels);
   }
 }
 
 function formatString(value: unknown, labels: TableLabels): string {
-  const normalized = normalizeNonEmptyString(value);
-  return normalized ?? labels.cellEmpty;
+  return nonEmptyString(value) ?? labels.cellEmpty;
+}
+
+function formatLabeledOption(
+  value: unknown,
+  optionLabels: Readonly<Record<string, string>> | undefined,
+  labels: TableLabels,
+): string {
+  const normalized = nonEmptyString(value);
+  if (normalized === undefined) return labels.cellEmpty;
+  return optionLabels?.[normalized] ?? normalized;
 }
 
 function formatNumber(value: unknown, labels: TableLabels): string {
-  const normalized = normalizeFiniteNumber(value);
-  return normalized === undefined ? labels.cellEmpty : numberFormatter.format(normalized);
+  if (typeof value !== "number" || !Number.isFinite(value)) return labels.cellEmpty;
+  return numberFormatter.format(value);
 }
 
 function formatBoolean(value: unknown, labels: TableLabels): string {
@@ -49,29 +59,22 @@ function formatBoolean(value: unknown, labels: TableLabels): string {
 }
 
 function formatDate(value: unknown, labels: TableLabels): string {
-  const normalized = normalizeValidDate(value);
-  return normalized === undefined ? labels.cellEmpty : dateFormatter.format(normalized);
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) return labels.cellEmpty;
+  return dateFormatter.format(value);
 }
 
-function formatTags(value: unknown, labels: TableLabels): string {
-  const normalized = normalizeStringList(value);
-  return normalized === undefined ? labels.cellEmpty : normalized.join(", ");
+function formatTags(
+  value: unknown,
+  optionLabels: Readonly<Record<string, string>> | undefined,
+  labels: TableLabels,
+): string {
+  if (!Array.isArray(value) || value.length === 0) return labels.cellEmpty;
+  const labelsForTags = value
+    .filter((entry): entry is string => typeof entry === "string" && entry.length > 0)
+    .map((tag) => optionLabels?.[tag] ?? tag);
+  return labelsForTags.length > 0 ? labelsForTags.join(", ") : labels.cellEmpty;
 }
 
-function normalizeNonEmptyString(value: unknown): string | undefined {
+function nonEmptyString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
-}
-
-function normalizeFiniteNumber(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
-}
-
-function normalizeValidDate(value: unknown): Date | undefined {
-  return value instanceof Date && !Number.isNaN(value.getTime()) ? value : undefined;
-}
-
-function normalizeStringList(value: unknown): readonly string[] | undefined {
-  if (!Array.isArray(value) || value.length === 0) return undefined;
-  const strings = value.filter((entry): entry is string => typeof entry === "string");
-  return strings.length > 0 ? strings : undefined;
 }

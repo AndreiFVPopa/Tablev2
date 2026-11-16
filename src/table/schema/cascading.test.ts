@@ -1,16 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import {
-  FIELD_KINDS,
-  FILTER_KINDS,
-  defaultFilterKind,
-  interpretSchema,
-  isSortableKind,
-} from "../index";
+import { FIELD_KINDS, interpretSchema } from "../index";
 
 describe("cascading schema change: age: number → age: string", () => {
-  it("interprets age as numeric with numeric filter and sort when defined as z.number()", () => {
+  it("interprets age as numeric when defined as z.number()", () => {
     const schema = z.object({
       name: z.string(),
       age: z.number().int().min(5).max(25),
@@ -23,11 +17,9 @@ describe("cascading schema change: age: number → age: string", () => {
       expect(age.min).toBe(5);
       expect(age.max).toBe(25);
     }
-    expect(isSortableKind(age!.kind)).toBe(true);
-    expect(defaultFilterKind(age!.kind)).toBe(FILTER_KINDS.NUMBER_RANGE);
   });
 
-  it("interprets age as text with alphabetical sort and text search when defined as z.string()", () => {
+  it("interprets age as text when defined as z.string()", () => {
     const schema = z.object({
       name: z.string(),
       age: z.string().min(1).max(3),
@@ -39,11 +31,9 @@ describe("cascading schema change: age: number → age: string", () => {
       expect(age.minLength).toBe(1);
       expect(age.maxLength).toBe(3);
     }
-    expect(isSortableKind(age!.kind)).toBe(true);
-    expect(defaultFilterKind(age!.kind)).toBe(FILTER_KINDS.TEXT_SEARCH);
   });
 
-  it("still interprets age as enum with enum-select filter when switched to an enum", () => {
+  it("still interprets age as enum when switched to an enum", () => {
     const schema = z.object({
       age: z.enum(["child", "teen", "adult"]),
     });
@@ -53,6 +43,5 @@ describe("cascading schema change: age: number → age: string", () => {
     if (age?.kind === FIELD_KINDS.ENUM) {
       expect(age.options).toEqual(["child", "teen", "adult"]);
     }
-    expect(defaultFilterKind(age!.kind)).toBe(FILTER_KINDS.ENUM_SELECT);
   });
 });

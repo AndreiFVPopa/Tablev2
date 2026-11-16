@@ -1,4 +1,4 @@
-import styles from "../filters.module.scss";
+import styles from "../shared/filters.module.scss";
 
 import { useDateRangeFilter } from "./use-date-range-filter";
 
