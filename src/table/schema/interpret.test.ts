@@ -86,8 +86,8 @@ describe("interpretSchema — core kinds", () => {
     expect(diagnostics).toEqual([]);
     const bounded = byPath(fields, "bounded");
     expect(bounded.kind).toBe(FIELD_KINDS.DATE);
-    expect(Object.prototype.hasOwnProperty.call(bounded, "min")).toBe(false);
-    expect(Object.prototype.hasOwnProperty.call(bounded, "max")).toBe(false);
+    expect(Object.hasOwn(bounded, "min")).toBe(false);
+    expect(Object.hasOwn(bounded, "max")).toBe(false);
   });
   it("interprets string enum with options", () => {
     const schema = z.object({ color: z.enum(["red", "green", "blue"]) });

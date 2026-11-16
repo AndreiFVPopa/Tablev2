@@ -17,7 +17,6 @@ describe("App", () => {
       screen.getByRole("heading", { level: 1, name: /schema-driven data table/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Elevi/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Produse/i })).toBeInTheDocument();
     await waitFor(() => {
       expect(history.location.pathname).toBe("/elevi");
       expect(screen.getByRole("heading", { level: 2, name: /Elevi/i })).toBeInTheDocument();

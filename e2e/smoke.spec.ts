@@ -9,14 +9,6 @@ test("redirects home to Elevi and loads the students table", async ({ page }) =>
   await expect(page.getByRole("cell", { name: "Ana Pop" })).toBeVisible();
 });
 
-test("products route loads schema-driven columns", async ({ page }) => {
-  await page.goto("/produse");
-  await expect(page.getByRole("heading", { level: 2, name: /Produse/i })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Sortează Titlu/i })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Sortează Țară/i })).toBeVisible();
-  await expect(page.getByRole("table", { name: /Tabel de date/i })).toBeVisible();
-});
-
 test("elevi URL filter, sort, pagination, refresh, and back/forward", async ({ page }) => {
   await page.goto("/elevi?page=1&pageSize=10&sort=&utm=e2e");
   await expect(page.getByRole("table")).toBeVisible();
@@ -47,11 +39,9 @@ test("elevi URL filter, sort, pagination, refresh, and back/forward", async ({ p
   await expect(page).toHaveURL(/address\.city=Sibiu/);
 });
 
-test("produse nested supplier filter persists in the URL", async ({ page }) => {
+test("/produse is not registered as a demo route", async ({ page }) => {
   await page.goto("/produse");
-  await expect(page.getByRole("table")).toBeVisible();
-  await page.getByRole("searchbox", { name: /Filtrează Țară/ }).fill("România");
-  await expect(page).toHaveURL(/supplier\.country=/);
-  await page.getByRole("button", { name: /Sortează Preț/i }).click();
-  await expect(page).toHaveURL(/sort=price/);
+  await expect(page.getByRole("link", { name: /Produse/i })).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 2, name: /Produse/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Sortează Titlu/i })).toHaveCount(0);
 });

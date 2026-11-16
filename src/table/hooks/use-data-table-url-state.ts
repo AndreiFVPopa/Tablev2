@@ -1,43 +1,41 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 
-import { interpretSchema } from "../schema/index";
 import {
   decodeTableState,
   encodeTableState,
   shallowEqual,
   stripTableKeys,
-  type CodecOptions,
   type SearchRecord,
 } from "../url/codec";
+import { resolveCodecOptions } from "../url/resolve-codec-options";
 
 import type { DataTableState } from "../lib/table-state";
-import type { z } from "zod";
-export interface UseDataTableUrlStateOptions {
-  readonly schema: z.ZodType;
-  readonly urlNamespace?: string;
-  readonly pageSizes: readonly number[];
-  readonly defaultPageSize: number;
-}
-export interface UseDataTableUrlStateResult {
-  readonly state: DataTableState;
-  readonly onStateChange: (next: DataTableState) => void;
-}
+import type {
+  UseDataTableUrlStateOptions,
+  UseDataTableUrlStateResult,
+} from "./use-data-table-url-state.types";
+
+export type {
+  UseDataTableUrlStateOptions,
+  UseDataTableUrlStateResult,
+} from "./use-data-table-url-state.types";
+
 export function useDataTableUrlState({
   schema,
   urlNamespace,
   pageSizes,
   defaultPageSize,
 }: UseDataTableUrlStateOptions): UseDataTableUrlStateResult {
-  const codecOptions = useMemo<CodecOptions>(() => {
-    const { fields } = interpretSchema(schema);
-    return {
-      fields,
-      ...(urlNamespace !== undefined ? { urlNamespace } : {}),
-      defaultPageSize,
-      pageSizes,
-    };
-  }, [schema, urlNamespace, defaultPageSize, pageSizes]);
+  const codecOptions = useMemo(
+    () =>
+      resolveCodecOptions(schema, {
+        ...(urlNamespace !== undefined ? { urlNamespace } : {}),
+        pageSizes,
+        defaultPageSize,
+      }),
+    [schema, urlNamespace, defaultPageSize, pageSizes],
+  );
   const search: SearchRecord = useSearch({ strict: false });
   const state = useMemo<DataTableState>(() => {
     const decoded = decodeTableState(search, codecOptions);
@@ -52,14 +50,14 @@ export function useDataTableUrlState({
   }, [search, codecOptions]);
   const navigate = useNavigate();
   const onStateChange = useCallback(
-    (next: DataTableState) => {
-      const nextTableKeys = encodeTableState(next, codecOptions);
+    (nextState: DataTableState) => {
+      const nextTableKeys = encodeTableState(nextState, codecOptions);
       const preserved = stripTableKeys(search, codecOptions);
-      const merged = { ...preserved, ...nextTableKeys };
-      if (shallowEqual(merged, search)) return;
+      const mergedSearch = { ...preserved, ...nextTableKeys };
+      if (shallowEqual(mergedSearch, search)) return;
       void navigate({
         to: ".",
-        search: () => merged,
+        search: () => mergedSearch,
         replace: false,
         resetScroll: false,
       });

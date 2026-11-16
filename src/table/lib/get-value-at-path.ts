@@ -1,10 +1,12 @@
+import { isPlainRecord } from "./is-plain-record";
+
 export function getValueAtPath(row: unknown, segments: readonly string[]): unknown {
   let current: unknown = row;
   for (const segment of segments) {
-    if (current === null || typeof current !== "object" || Array.isArray(current)) {
+    if (!isPlainRecord(current)) {
       return undefined;
     }
-    current = (current as Record<string, unknown>)[segment];
+    current = current[segment];
   }
   return current;
 }

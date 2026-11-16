@@ -13,7 +13,7 @@
 ## React
 
 - Minimize `useEffect`. Never use it for data fetching, derived state, URL sync, or copying props into local state.
-- Use TanStack Query for async state, TanStack Router for URL state, TanStack Table for table computations.
+- Use TanStack Router for URL state and TanStack Table for table computations. The demo loads validated local fixtures synchronously; host apps may fetch from any source and pass rows to `<DataTable>` as props.
 - TanStack Router is the single owner of URL search state inside the table too. Do not implement a parallel browser History store, `popstate` listener, or `useSyncExternalStore` URL synchronization layer. If the project outgrows TanStack Router, change router — not route-handling style.
 - Prefer render-time calculations over `useMemo` / `useCallback` unless profiling shows a real need or reference stability is required for a dependency.
 - Prefer controlled components.
@@ -44,7 +44,10 @@ Do **not** extract:
 
 - Trivial one-line calculations.
 - Pure functions that do not call hooks — keep them as ordinary functions (same file or a sibling helper).
+- Thin wrappers that only rename a few locals without improving cohesion.
 - Logic solely to satisfy a line-count or complexity metric.
+
+Prefer explicit handlers such as `handleMinimumChange` / `handleMaximumChange` when clearer than a single parameterized handler in JSX. Parameterized factories may live inside the hook.
 
 Avoid hook chains that make the call graph hard to follow. Prefer one focused hook per component folder.
 
@@ -58,7 +61,7 @@ Skip a types file when the only export is a one-line alias that is clearer inlin
 
 - Strict mode with `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `useUnknownInCatchVariables`, `verbatimModuleSyntax`, `isolatedModules`.
 - No `any`, unsafe casts, or unnecessary non-null assertions.
-- `unknown` for anything untrusted (HTTP responses, external input). Validate with Zod before using.
+- `unknown` for anything untrusted (JSON fixtures, external input). Validate with Zod before using.
 - Discriminated unions + exhaustive switches where the shape permits.
 - Use `import type` for type-only imports (enforced by ESLint).
 - Prefer `readonly` on props and view-model fields.
@@ -105,8 +108,7 @@ Porting `src/table/` to another React + TanStack Router host requires the `@tabl
 - Schemas: `*.schema.ts`
 - Runtime semantic constants: `*.constants.ts`
 - Derived / colocated types: `*.types.ts`
-- Request functions: `*.requests.ts`
-- Query options: `*.queries.ts`
+- Validated fixture datasets: `*.dataset.ts`
 - Hooks: `use-*.ts`
 - Pure helpers live beside their consumer. Shared helpers live in `src/shared/lib`.
 - Feature UI lives inside the feature. Generic UI lives in `src/shared/components`.
@@ -114,17 +116,41 @@ Porting `src/table/` to another React + TanStack Router host requires the `@tabl
 - Do not split files only to satisfy a line-count target.
 - The reusable table (`src/table/`) stays copy-paste portable. Do not move reusable table logic into `src/app/` or `src/features/`.
 
+### Descriptive identifiers
+
+Prefer names that communicate responsibility:
+
+| Prefix / form                 | Use for                             |
+| ----------------------------- | ----------------------------------- |
+| `handle...`                   | Event handlers and UI callbacks     |
+| `parse...`                    | Parsing / validation of input       |
+| `format...`                   | Display formatting                  |
+| `resolve...`                  | Deriving a value from configuration |
+| `create...`                   | Constructing objects                |
+| `is...` / `has...` / `can...` | Boolean predicates                  |
+| `use...`                      | React hooks only                    |
+
+Avoid meaningless abbreviations and one-letter identifiers except conventional locals (`id`, `key`, index in a tight loop). Do not rename clear contextual names such as `row`, `column`, `schema`, `value`, or `index` merely to lengthen them.
+
+Public API names stay stable unless a rename is necessary and documented. British spelling in the codec (`canonicaliseSearch`) is intentional.
+
 ## Styles
 
 - SCSS Modules colocated with the component that owns them.
 - Shared filter chrome may live as `src/table/filters/filters.module.scss` when several filter widgets share the same classes.
-- Design tokens live in `src/app/styles/tokens.scss` as CSS custom properties. Consumers use `var(--token)`.
-- No Tailwind. Avoid `!important`; if a Stylelint suppression is unavoidable, use a directive with a `--` reason. Stylelint keeps selector depth and global usage in check.
+- Class names follow BEM with camelCase identifiers so CSS Modules and Fallow can track `styles.block__element` as a JS member: `block`, `block__element`, `block--modifier`. Examples: `dataTable`, `dataTable__empty`, `appShell__navLink`, `filter__textInput`.
+- Stylelint enforces that pattern; do not weaken nesting or `!important` rules to paper over specificity issues.
+
+- App design tokens live in `src/app/styles/tokens.scss` as CSS custom properties. Foundation color roles: `top` (nav/header), `main` (page surface), `secondary` (muted/supporting), `accent` (actions/focus), plus semantic foreground, border, focus, disabled, success, and error tokens.
+- Table design tokens live in `src/table/styles/tokens.scss` on `:root` (`--table-*`). The table must not `@use` app tokens. Consumers may override `--table-*` variables.
+
+- Prefer CSS custom properties for runtime tokens. SCSS variables/mixins only where they add compile-time value.
+- No Tailwind. Avoid `!important`; if a Stylelint suppression is unavoidable, use a directive with a `--` reason.
 
 ## Labels and identifiers
 
 - Table labels live in `src/table/table-labels.ts`. Consumers may override individual labels via the `labels` prop.
-- Query keys, route IDs, and other shared identifiers are declared as `as const` constants, not scattered string literals.
+- Route IDs and other shared identifiers are declared as `as const` constants, not scattered string literals.
 - Ordinary one-off UI text may stay inline; only reused or semantic strings become constants.
 
 ## Tests

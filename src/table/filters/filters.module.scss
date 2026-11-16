@@ -1,15 +1,12 @@
-$filterBorder: #c7cbd1;
-$filterFocus: #4a7cff;
-$filterBg: #fff;
-
-.filterRoot {
+.filter {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--table-space-1);
   min-width: 0;
+  color: var(--table-color-text);
 }
 
-.srOnly {
+.filter__srOnly {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -21,28 +18,29 @@ $filterBg: #fff;
   border: 0;
 }
 
-.textInput,
-.select,
-.numberInput,
-.dateInput {
-  padding: 0.25rem 0.4rem;
+.filter__textInput,
+.filter__select,
+.filter__numberInput,
+.filter__dateInput {
+  padding: var(--table-space-1) 0.4rem;
   font: inherit;
-  background: $filterBg;
-  border: 1px solid $filterBorder;
-  border-radius: 4px;
+  background: var(--table-control-bg);
+  color: inherit;
+  border: var(--table-border-width) solid var(--table-color-border);
+  border-radius: var(--table-radius-md);
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
 
   &:focus-visible {
-    outline: 2px solid $filterFocus;
+    outline: 2px solid var(--table-color-focus);
     outline-offset: 1px;
   }
 }
 
-.rangeRow {
+.filter__range {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--table-space-1);
 
   > * {
     flex: 1 1 0;
@@ -50,11 +48,11 @@ $filterBg: #fff;
   }
 }
 
-.booleanGroup,
-.tagsGroup {
+.filter__booleanGroup,
+.filter__tagsGroup {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 0.75rem;
+  gap: var(--table-space-1) var(--table-space-3);
   padding: 0;
   margin: 0;
   border: 0;
@@ -62,12 +60,12 @@ $filterBg: #fff;
 
   > legend {
     padding: 0;
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--table-space-1);
   }
 
   label {
     display: inline-flex;
-    gap: 0.25rem;
+    gap: var(--table-space-1);
     align-items: center;
     white-space: nowrap;
   }

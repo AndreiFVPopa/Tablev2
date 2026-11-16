@@ -37,14 +37,27 @@ describe("getValueAtPath", () => {
     expect(getValueAtPath(row, ["address", "zip"])).toBeUndefined();
     expect(getValueAtPath(row, ["missing", "x"])).toBeUndefined();
   });
-  it("returns undefined for null / primitive midway segments", () => {
+  it("returns undefined for null / undefined / primitive midway segments", () => {
     expect(getValueAtPath({ a: null }, ["a", "b"])).toBeUndefined();
+    expect(getValueAtPath({ a: undefined }, ["a", "b"])).toBeUndefined();
     expect(getValueAtPath({ a: 5 }, ["a", "b"])).toBeUndefined();
+    expect(getValueAtPath({ a: "text" }, ["a", "b"])).toBeUndefined();
   });
   it("does not descend into arrays", () => {
     expect(getValueAtPath({ tags: ["x"] }, ["tags", "0"])).toBeUndefined();
   });
+  it("returns the root for an empty path", () => {
+    expect(getValueAtPath(row, [])).toBe(row);
+    expect(getValueAtPath(null, [])).toBeNull();
+    expect(getValueAtPath(42, [])).toBe(42);
+  });
+  it("returns undefined when the row itself is not a plain object", () => {
+    expect(getValueAtPath(null, ["a"])).toBeUndefined();
+    expect(getValueAtPath(undefined, ["a"])).toBeUndefined();
+    expect(getValueAtPath(["a"], ["0"])).toBeUndefined();
+  });
 });
+
 describe("formatValue", () => {
   it("formats text", () => {
     const d = descriptor("text");

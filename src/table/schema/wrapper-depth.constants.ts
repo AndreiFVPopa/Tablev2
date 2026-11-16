@@ -1,0 +1,1 @@
+export const MAX_SCHEMA_WRAPPER_DEPTH = 32;

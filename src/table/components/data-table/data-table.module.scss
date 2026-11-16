@@ -1,45 +1,41 @@
-@use "sass:color";
+@use "../../styles/tokens";
 
-$border: #c7cbd1;
-$muted: #6b7280;
-$focus: #4a7cff;
-$rowStripe: #f7f8fa;
-
-.wrapper {
+.dataTable {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--table-space-3);
   overflow-x: auto;
-  font-size: 0.95rem;
+  font-size: var(--table-font-size);
+  color: var(--table-color-text);
 }
 
-.table {
+.dataTable__table {
   border-collapse: collapse;
   width: 100%;
-  min-width: 480px;
+  min-width: var(--table-min-width);
 
   th,
   td {
-    padding: 0.5rem 0.75rem;
+    padding: var(--table-space-2) var(--table-space-3);
     text-align: left;
     vertical-align: top;
-    border-bottom: 1px solid $border;
+    border-bottom: var(--table-border-width) solid var(--table-color-border);
   }
 
   thead th {
-    background: color.adjust($rowStripe, $lightness: 2%);
+    background: var(--table-color-surface-muted);
     font-weight: 600;
   }
 
   tbody tr:nth-child(even) td {
-    background: $rowStripe;
+    background: var(--table-color-surface-muted);
   }
 
   button {
     display: inline-flex;
-    gap: 0.25rem;
+    gap: var(--table-space-1);
     align-items: baseline;
-    padding: 0.1rem 0.25rem;
+    padding: 0.1rem var(--table-space-1);
     background: transparent;
     color: inherit;
     font: inherit;
@@ -47,15 +43,15 @@ $rowStripe: #f7f8fa;
     cursor: pointer;
 
     &:focus-visible {
-      outline: 2px solid $focus;
+      outline: 2px solid var(--table-color-focus);
       outline-offset: 2px;
-      border-radius: 2px;
+      border-radius: var(--table-radius-sm);
     }
   }
 }
 
-.empty {
-  padding: 2rem;
+.dataTable__empty {
+  padding: var(--table-space-8);
   text-align: center;
-  color: $muted;
+  color: var(--table-color-text-muted);
 }

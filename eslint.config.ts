@@ -120,7 +120,7 @@ const config = tseslint.config(
         {
           selector: "CallExpression[callee.name='fetch']",
           message:
-            "Do not call fetch directly in UI code. Use request modules in features/*/api or shared/api.",
+            "Do not call fetch from table or feature UI. Demo data is validated local fixtures; host apps may fetch outside these layers and pass data as props.",
         },
       ],
 
@@ -219,63 +219,6 @@ const config = tseslint.config(
           ],
         },
       ],
-    },
-  },
-
-  {
-    files: ["src/features/students/**/*.{ts,tsx}"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["@features/products/*", "src/features/products/*"],
-              message: "students must not import from products.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-  {
-    files: ["src/features/products/**/*.{ts,tsx}"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["@features/students/*", "src/features/students/*"],
-              message: "products must not import from students.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  {
-    files: ["src/**/api/**/*.ts"],
-    rules: {
-      "no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["**/components/**", "**/*.tsx"],
-              message: "Request modules must not import UI components.",
-            },
-          ],
-        },
-      ],
-    },
-  },
-
-  {
-    files: ["src/shared/api/**/*.ts"],
-    rules: {
-      "no-restricted-syntax": "off",
     },
   },
 
