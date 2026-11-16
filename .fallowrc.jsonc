@@ -64,6 +64,7 @@
         "eslint.config.ts",
         "stylelint.config.js",
         "vitest.setup.ts",
+        "scripts/generate-route-tree.ts",
       ],
     },
     "calls": {
