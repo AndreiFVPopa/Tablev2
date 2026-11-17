@@ -3,13 +3,15 @@ import { DataTableUrlBacked } from "./data-table-url-backed";
 import { isControlledDataTableProps } from "./data-table.types";
 
 import type { DataTableProps } from "./data-table.types";
-import type { RowData } from "@tanstack/react-table";
+import type { z } from "zod";
 
 export { DEFAULT_PAGE_SIZES } from "@table/lib/page-sizes";
 
 export type { DataTableProps } from "./data-table.types";
 
-export function DataTable<TData extends RowData>(props: DataTableProps<TData>): React.JSX.Element {
+export function DataTable<TSchema extends z.ZodObject>(
+  props: DataTableProps<TSchema>,
+): React.JSX.Element {
   if (isControlledDataTableProps(props)) {
     return <DataTableControlled {...props} />;
   }

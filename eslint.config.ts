@@ -40,7 +40,8 @@ const complexityRules: Linter.RulesRecord = {
   "max-depth": ["warn", 4],
   "max-lines-per-function": ["warn", { max: 120, skipComments: true, skipBlankLines: true }],
   "max-nested-callbacks": ["warn", 4],
-  "max-params": ["warn", 5],
+  // A third positional parameter must be a named options object. Framework callbacks are exempted where they are defined.
+  "max-params": ["error", 2],
   "sonarjs/cognitive-complexity": ["warn", 15],
   "sonarjs/no-duplicate-string": ["warn", { threshold: 4 }],
   "sonarjs/no-identical-functions": "warn",

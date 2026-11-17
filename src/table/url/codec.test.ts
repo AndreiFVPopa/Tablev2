@@ -105,6 +105,13 @@ describe("encodeTableState", () => {
     expect(encoded["joined.to"]).toBe("2026-12-31");
     expect(encoded["address.city"]).toBe("Cluj");
   });
+  it("omits a boolean filter that is neither true nor false", () => {
+    const encoded = encodeTableState(
+      defaultState({ columnFilters: [{ id: "active", value: "yes" }] }),
+      options(),
+    );
+    expect(encoded.active).toBeUndefined();
+  });
   it("prefixes every key when a urlNamespace is set", () => {
     const encoded = encodeTableState(
       defaultState({
@@ -142,6 +149,12 @@ describe("decodeTableState", () => {
     });
     const encoded = encodeTableState(original, opts);
     expect(decodeTableState(encoded, opts)).toEqual(original);
+  });
+  it("reads boolean true from a boolean, the string true, and 1", () => {
+    for (const active of [true, "true", "1"] as const) {
+      const decoded = decodeTableState({ active }, options());
+      expect(decoded.columnFilters).toEqual([{ id: "active", value: true }]);
+    }
   });
   it("falls back to the default pageSize when the value is not allowed and drops invalid filters", () => {
     const decoded = decodeTableState(
@@ -259,6 +272,7 @@ describe("shallowEqual", () => {
   it("compares encoded search records by key/value identity", () => {
     expect(shallowEqual({ a: "1" }, { a: "1" })).toBe(true);
     expect(shallowEqual({ a: "1" }, { a: "2" })).toBe(false);
+    expect(shallowEqual({ a: "1" }, { b: "1" })).toBe(false);
     expect(shallowEqual({ a: "1" }, { a: "1", b: "2" })).toBe(false);
   });
 });

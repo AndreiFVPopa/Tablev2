@@ -1,13 +1,11 @@
 import { toUrlSlug } from "@table/lib/to-url-slug";
 
-import { DIAGNOSTIC_CODES, type DiagnosticCode } from "./diagnostic-codes.constants";
+import { DIAGNOSTIC_CODES } from "./diagnostic-codes.constants";
 import { URL_VALUE_ENCODINGS, type UrlValueEncoding } from "./url-value-encoding.constants";
 
-export interface OptionUrlEncodingIssue {
-  readonly code: DiagnosticCode;
-  readonly message: string;
-  readonly hint: string;
-}
+import type { OptionUrlEncodingIssue } from "./option-encoding-config.types";
+
+export type { OptionUrlEncodingIssue } from "./option-encoding-config.types";
 
 export function resolveOptionUrlEncoding(input: {
   readonly requestedEncoding: UrlValueEncoding;

@@ -196,7 +196,7 @@ Rules:
 - When `{ throwOnDiagnostics: true }` is passed, a `SchemaInterpretationError` is thrown with the diagnostics list. The only class in the module exists for that identity.
 - No classes beyond the error, no registries, no generic plugin system. Adding a new Zod kind is an `instanceof` branch in `buildLeafDescriptor` and a new descriptor variant — editable by anyone, auditable with one `rg instanceof src/table/schema`.
 
-The cascading test (`src/table/schema/cascading.test.ts`) proves the derivation is real: flipping `age: z.number()` to `z.string()` changes `kind`, `isSortableKind`, and `defaultFilterKind` without a single hand-written column, filter, or configuration change.
+The cascading test (`src/table/schema/interpret.cascading.test.ts`) proves the derivation is real: flipping `age: z.number()` to `z.string()` changes `kind`, `isSortableKind`, and `defaultFilterKind` without a single hand-written column, filter, or configuration change.
 
 ### Zod v4 date-bounds limitation
 

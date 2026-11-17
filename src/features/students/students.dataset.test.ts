@@ -12,8 +12,8 @@ describe("studentsDataset", () => {
   });
 
   it("rejects invalid fixture payloads", () => {
-    expect(() => parseDataset(studentsDatasetSchema, [{ id: "bad" }], "elevi")).toThrow(
-      DatasetValidationError,
-    );
+    expect(() =>
+      parseDataset({ schema: studentsDatasetSchema, payload: [{ id: "bad" }], entity: "elevi" }),
+    ).toThrow(DatasetValidationError);
   });
 });

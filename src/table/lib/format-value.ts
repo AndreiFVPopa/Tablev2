@@ -1,6 +1,6 @@
 import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
 
-import type { FieldDescriptor } from "@table/schema/index";
+import type { FormatLabeledValueInput, FormatValueInput } from "./format-value.types";
 import type { TableLabels } from "@table/table-labels";
 
 export const TABLE_LOCALE = "ro-RO" as const;
@@ -12,16 +12,12 @@ const dateFormatter = new Intl.DateTimeFormat(TABLE_LOCALE, {
   day: "numeric",
 });
 
-export function formatValue(
-  value: unknown,
-  descriptor: FieldDescriptor,
-  labels: TableLabels,
-): string {
+export function formatValue({ value, descriptor, labels }: FormatValueInput): string {
   switch (descriptor.kind) {
     case FIELD_KINDS.TEXT:
       return formatString(value, labels);
     case FIELD_KINDS.ENUM:
-      return formatLabeledOption(value, descriptor.meta.optionLabels, labels);
+      return formatLabeledOption({ value, optionLabels: descriptor.meta.optionLabels, labels });
     case FIELD_KINDS.NUMERIC:
       return formatNumber(value, labels);
     case FIELD_KINDS.BOOLEAN:
@@ -29,7 +25,7 @@ export function formatValue(
     case FIELD_KINDS.DATE:
       return formatDate(value, labels);
     case FIELD_KINDS.TAGS:
-      return formatTags(value, descriptor.meta.optionLabels, labels);
+      return formatTags({ value, optionLabels: descriptor.meta.optionLabels, labels });
   }
 }
 
@@ -37,11 +33,7 @@ function formatString(value: unknown, labels: TableLabels): string {
   return nonEmptyString(value) ?? labels.cellEmpty;
 }
 
-function formatLabeledOption(
-  value: unknown,
-  optionLabels: Readonly<Record<string, string>> | undefined,
-  labels: TableLabels,
-): string {
+function formatLabeledOption({ value, optionLabels, labels }: FormatLabeledValueInput): string {
   const normalized = nonEmptyString(value);
   if (normalized === undefined) return labels.cellEmpty;
   return optionLabels?.[normalized] ?? normalized;
@@ -63,11 +55,7 @@ function formatDate(value: unknown, labels: TableLabels): string {
   return dateFormatter.format(value);
 }
 
-function formatTags(
-  value: unknown,
-  optionLabels: Readonly<Record<string, string>> | undefined,
-  labels: TableLabels,
-): string {
+function formatTags({ value, optionLabels, labels }: FormatLabeledValueInput): string {
   if (!Array.isArray(value) || value.length === 0) return labels.cellEmpty;
   const labelsForTags = value
     .filter((entry): entry is string => typeof entry === "string" && entry.length > 0)

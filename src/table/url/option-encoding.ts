@@ -1,19 +1,21 @@
 import { toUrlSlug } from "@table/lib/to-url-slug";
-import {
-  URL_VALUE_ENCODINGS,
-  type UrlValueEncoding,
-} from "@table/schema/url-value-encoding.constants";
+import { URL_VALUE_ENCODINGS } from "@table/schema/url-value-encoding.constants";
 
-import type { EnumFieldDescriptor, TagsFieldDescriptor } from "@table/schema/descriptors";
+import type {
+  DecodeOptionFromUrlTokenInput,
+  DecodeSlugUrlTokenInput,
+  EncodeOptionToUrlTokenInput,
+  OptionFieldDescriptor,
+} from "./option-encoding.types";
 
-export type OptionFieldDescriptor = EnumFieldDescriptor | TagsFieldDescriptor;
+export type { OptionFieldDescriptor } from "./option-encoding.types";
 
-export function encodeOptionToUrlToken(
-  canonicalOption: string,
-  optionValues: readonly string[],
-  encoding: UrlValueEncoding,
-  slugOverrides?: Readonly<Record<string, string>>,
-): string | undefined {
+export function encodeOptionToUrlToken({
+  canonicalOption,
+  optionValues,
+  encoding,
+  slugOverrides,
+}: EncodeOptionToUrlTokenInput): string | undefined {
   const index = optionValues.indexOf(canonicalOption);
   if (index < 0) return undefined;
 
@@ -29,19 +31,19 @@ export function encodeOptionToUrlToken(
   }
 }
 
-export function decodeOptionFromUrlToken(
-  urlToken: string,
-  optionValues: readonly string[],
-  encoding: UrlValueEncoding,
-  slugOverrides?: Readonly<Record<string, string>>,
-): string | undefined {
+export function decodeOptionFromUrlToken({
+  urlToken,
+  optionValues,
+  encoding,
+  slugOverrides,
+}: DecodeOptionFromUrlTokenInput): string | undefined {
   switch (encoding) {
     case URL_VALUE_ENCODINGS.CANONICAL:
       return optionValues.includes(urlToken) ? urlToken : undefined;
     case URL_VALUE_ENCODINGS.POSITIONAL:
       return decodePositionalUrlToken(urlToken, optionValues);
     case URL_VALUE_ENCODINGS.SLUG:
-      return decodeSlugUrlToken(urlToken, optionValues, slugOverrides);
+      return decodeSlugUrlToken({ urlToken, optionValues, slugOverrides });
   }
 }
 
@@ -49,24 +51,24 @@ export function encodeDescriptorOption(
   canonicalOption: string,
   descriptor: OptionFieldDescriptor,
 ): string | undefined {
-  return encodeOptionToUrlToken(
+  return encodeOptionToUrlToken({
     canonicalOption,
-    descriptor.options,
-    descriptor.meta.urlValueEncoding,
-    descriptor.meta.urlSlugOverrides,
-  );
+    optionValues: descriptor.options,
+    encoding: descriptor.meta.urlValueEncoding,
+    slugOverrides: descriptor.meta.urlSlugOverrides,
+  });
 }
 
 export function decodeDescriptorOption(
   urlToken: string,
   descriptor: OptionFieldDescriptor,
 ): string | undefined {
-  return decodeOptionFromUrlToken(
+  return decodeOptionFromUrlToken({
     urlToken,
-    descriptor.options,
-    descriptor.meta.urlValueEncoding,
-    descriptor.meta.urlSlugOverrides,
-  );
+    optionValues: descriptor.options,
+    encoding: descriptor.meta.urlValueEncoding,
+    slugOverrides: descriptor.meta.urlSlugOverrides,
+  });
 }
 
 function decodePositionalUrlToken(
@@ -81,11 +83,11 @@ function decodePositionalUrlToken(
   return optionValues[position - 1];
 }
 
-function decodeSlugUrlToken(
-  urlToken: string,
-  optionValues: readonly string[],
-  slugOverrides: Readonly<Record<string, string>> | undefined,
-): string | undefined {
+function decodeSlugUrlToken({
+  urlToken,
+  optionValues,
+  slugOverrides,
+}: DecodeSlugUrlTokenInput): string | undefined {
   for (const option of optionValues) {
     const slug = slugOverrides?.[option] ?? toUrlSlug(option);
     if (slug === urlToken) return option;

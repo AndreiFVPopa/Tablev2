@@ -1,7 +1,7 @@
 import { DEFAULT_PAGE_SIZES, resolveDefaultPageSize } from "../lib/page-sizes";
 import { interpretSchema } from "../schema/index";
 
-import { buildTableSearchKeySet } from "./search-keys";
+import { assertUniqueSearchKeys, buildTableSearchKeySet } from "./search-keys";
 
 import type { CodecOptions } from "./codec.types";
 import type { ComposeTableSearchValidatorOptions } from "./compose-search-validator.types";
@@ -14,6 +14,7 @@ export function createCodecOptions(input: {
   readonly defaultPageSize: number;
   readonly pageSizes: readonly number[];
 }): CodecOptions {
+  assertUniqueSearchKeys(input);
   return {
     fields: input.fields,
     ...(input.urlNamespace !== undefined ? { urlNamespace: input.urlNamespace } : {}),

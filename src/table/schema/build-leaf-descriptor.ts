@@ -6,27 +6,19 @@ import { resolveOptionUrlEncoding } from "./option-encoding-config";
 import { unwrapSchema } from "./unwrap-schema";
 
 import type {
-  DiagnosticIssue,
-  FieldDescriptor,
-  FieldWrappers,
-  ResolvedFieldMeta,
-} from "./descriptors";
+  ArrayLeafInput,
+  BuildLeafDescriptorInput,
+  EnumLeafInput,
+  StringEnumOptionsInput,
+  UrlEncodingIssueInput,
+} from "./build-leaf-descriptor.types";
+import type { FieldDescriptor } from "./descriptors";
 
-type LeafBase = FieldWrappers & {
-  readonly path: string;
-  readonly segments: readonly string[];
-  readonly meta: ResolvedFieldMeta;
-};
-
-export function buildLeafDescriptor(
-  inner: z.ZodType,
-  base: FieldWrappers & {
-    readonly path: string;
-    readonly segments: readonly string[];
-    readonly meta: ResolvedFieldMeta;
-  },
-  diagnostics: DiagnosticIssue[],
-): FieldDescriptor | null {
+export function buildLeafDescriptor({
+  inner,
+  base,
+  diagnostics,
+}: BuildLeafDescriptorInput): FieldDescriptor | null {
   if (inner instanceof z.ZodDate) {
     return { ...base, kind: FIELD_KINDS.DATE };
   }
@@ -37,13 +29,13 @@ export function buildLeafDescriptor(
     return { ...base, kind: FIELD_KINDS.BOOLEAN };
   }
   if (inner instanceof z.ZodEnum) {
-    return makeEnumDescriptor(inner, base, diagnostics);
+    return makeEnumDescriptor({ enumSchema: inner, base, diagnostics });
   }
   if (isStringLike(inner)) {
     return { ...base, kind: FIELD_KINDS.TEXT, ...readStringFacets(inner) };
   }
   if (inner instanceof z.ZodArray) {
-    return makeArrayDescriptor(inner, base, diagnostics);
+    return makeArrayDescriptor({ arraySchema: inner, base, diagnostics });
   }
   diagnostics.push({
     code: DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA,
@@ -54,16 +46,20 @@ export function buildLeafDescriptor(
   return null;
 }
 
-function makeEnumDescriptor(
-  enumSchema: z.ZodEnum,
-  base: LeafBase,
-  diagnostics: DiagnosticIssue[],
-): FieldDescriptor | null {
-  const stringOptions = collectStringEnumOptions(enumSchema, base.path, diagnostics);
+function makeEnumDescriptor({
+  enumSchema,
+  base,
+  diagnostics,
+}: EnumLeafInput): FieldDescriptor | null {
+  const stringOptions = collectStringEnumOptions({
+    enumSchema,
+    path: base.path,
+    diagnostics,
+  });
   if (!stringOptions) {
     return null;
   }
-  pushUrlEncodingIssue(base, stringOptions, true, diagnostics);
+  pushUrlEncodingIssue({ base, optionValues: stringOptions, allowPositional: true, diagnostics });
   return {
     ...base,
     kind: FIELD_KINDS.ENUM,
@@ -71,11 +67,11 @@ function makeEnumDescriptor(
   };
 }
 
-function makeArrayDescriptor(
-  arraySchema: z.ZodArray,
-  base: LeafBase,
-  diagnostics: DiagnosticIssue[],
-): FieldDescriptor | null {
+function makeArrayDescriptor({
+  arraySchema,
+  base,
+  diagnostics,
+}: ArrayLeafInput): FieldDescriptor | null {
   const element = unwrapSchema(arraySchema.element as z.ZodType).inner;
   if (!(element instanceof z.ZodEnum)) {
     diagnostics.push({
@@ -86,11 +82,15 @@ function makeArrayDescriptor(
     });
     return null;
   }
-  const stringOptions = collectStringEnumOptions(element, base.path, diagnostics);
+  const stringOptions = collectStringEnumOptions({
+    enumSchema: element,
+    path: base.path,
+    diagnostics,
+  });
   if (!stringOptions) {
     return null;
   }
-  pushUrlEncodingIssue(base, stringOptions, false, diagnostics);
+  pushUrlEncodingIssue({ base, optionValues: stringOptions, allowPositional: false, diagnostics });
   return {
     ...base,
     kind: FIELD_KINDS.TAGS,
@@ -98,12 +98,12 @@ function makeArrayDescriptor(
   };
 }
 
-function pushUrlEncodingIssue(
-  base: LeafBase,
-  optionValues: readonly string[],
-  allowPositional: boolean,
-  diagnostics: DiagnosticIssue[],
-): void {
+function pushUrlEncodingIssue({
+  base,
+  optionValues,
+  allowPositional,
+  diagnostics,
+}: UrlEncodingIssueInput): void {
   const issue = resolveOptionUrlEncoding({
     requestedEncoding: base.meta.urlValueEncoding,
     optionValues,
@@ -123,11 +123,11 @@ function pushUrlEncodingIssue(
   });
 }
 
-function collectStringEnumOptions(
-  enumSchema: z.ZodEnum,
-  path: string,
-  diagnostics: DiagnosticIssue[],
-): readonly string[] | null {
+function collectStringEnumOptions({
+  enumSchema,
+  path,
+  diagnostics,
+}: StringEnumOptionsInput): readonly string[] | null {
   const options = enumSchema.options;
   if (options.length === 0) {
     diagnostics.push({

@@ -20,7 +20,11 @@ export function encodeTableState(
     ...encodePagination(tableState.pagination, options),
     [canonicalKey(TABLE_SEARCH_KEYS.SORT, options.urlNamespace)]: encodeSort(tableState.sorting),
   };
-  writeEncodedFilters(encodedSearch, tableState.columnFilters, options);
+  writeEncodedFilters({
+    encodedSearch,
+    columnFilters: tableState.columnFilters,
+    options,
+  });
   return encodedSearch;
 }
 

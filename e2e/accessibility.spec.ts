@@ -5,8 +5,11 @@ test("elevi sorting is keyboard reachable and exposes aria-sort", async ({ page 
   await expect(page.getByRole("table")).toBeVisible();
 
   const nameSort = page.getByRole("button", { name: /Sortează Nume/i });
-  await nameSort.focus();
+  await page.getByRole("link", { name: "Elevi" }).focus();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
   await expect(nameSort).toBeFocused();
+  await expect(nameSort).toHaveCSS("outline-style", "solid");
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/sort=name/);
   await expect(page.getByRole("columnheader", { name: /Sortează Nume/i })).toHaveAttribute(

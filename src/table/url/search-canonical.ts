@@ -21,7 +21,7 @@ export function shallowEqual(left: SearchRecord, right: SearchRecord): boolean {
   if (leftKeys.length !== rightKeys.length) return false;
   for (const key of leftKeys) {
     if (!Object.hasOwn(right, key)) return false;
-    if (left[key] !== right[key]) return false;
+    if (!Object.is(left[key], right[key])) return false;
   }
   return true;
 }

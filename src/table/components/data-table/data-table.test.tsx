@@ -8,6 +8,7 @@ import { createDefaultTableState, type DataTableState } from "@table/lib/table-s
 import { DataTable, DEFAULT_PAGE_SIZES } from "./data-table";
 
 import type { TableLabels } from "@table/table-labels";
+
 const PeopleSchema = z.object({
   name: z.string().meta({ title: "Nume" }),
   age: z.int().meta({ title: "Vârstă" }),
@@ -65,20 +66,20 @@ const PEOPLE: readonly Person[] = [
     address: { city: "Brașov" },
   }),
 ];
-interface HarnessProps<TData extends object> {
-  readonly schema: z.ZodType;
-  readonly data: readonly TData[];
+interface HarnessProps<TSchema extends z.ZodObject> {
+  readonly schema: TSchema;
+  readonly data: readonly z.output<TSchema>[];
   readonly initial?: Partial<DataTableState>;
   readonly labels?: Partial<TableLabels>;
   readonly pageSizes?: readonly number[];
 }
-function Harness<TData extends object>({
+function Harness<TSchema extends z.ZodObject>({
   schema,
   data,
   initial,
   labels,
   pageSizes,
-}: HarnessProps<TData>): React.JSX.Element {
+}: HarnessProps<TSchema>): React.JSX.Element {
   const [state, setState] = useState<DataTableState>(() => createDefaultTableState(initial));
   return (
     <DataTable
@@ -91,7 +92,9 @@ function Harness<TData extends object>({
     />
   );
 }
-function renderTable<TData extends object>(props: HarnessProps<TData>): ReturnType<typeof render> {
+function renderTable<TSchema extends z.ZodObject>(
+  props: HarnessProps<TSchema>,
+): ReturnType<typeof render> {
   return render(<Harness {...props} />);
 }
 describe("DataTable column generation", () => {
@@ -128,6 +131,8 @@ describe("DataTable filtering", () => {
     fireEvent.change(search, { target: { value: "BOG" } });
     expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
     expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    fireEvent.change(search, { target: { value: "" } });
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
   });
   it("number range filter applies inclusive min/max", () => {
     renderTable({ schema: PeopleSchema, data: PEOPLE });
@@ -136,6 +141,8 @@ describe("DataTable filtering", () => {
     expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "carla" })).toBeInTheDocument();
     expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
+    fireEvent.change(min, { target: { value: "" } });
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
   });
   it("enum filter restricts to a selected option", () => {
     renderTable({ schema: PeopleSchema, data: PEOPLE });
@@ -147,10 +154,15 @@ describe("DataTable filtering", () => {
   });
   it("boolean filter restricts to true/false", () => {
     renderTable({ schema: PeopleSchema, data: PEOPLE });
-    const trueRadio = screen.getByRole("radio", { name: "Nu" });
-    fireEvent.click(trueRadio);
+    fireEvent.click(screen.getByRole("radio", { name: "Nu" }));
     expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
     expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "Da" }));
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
+    expect(screen.queryByRole("cell", { name: "Bogdan" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "Toate" }));
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
   });
   it("tags filter is multi-select match-any", () => {
     renderTable({ schema: PeopleSchema, data: PEOPLE });
@@ -158,6 +170,17 @@ describe("DataTable filtering", () => {
     fireEvent.click(betaCheck);
     expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
     expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    fireEvent.click(betaCheck);
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
+  });
+  it("date range filter keeps rows on or after the from date and clears when emptied", () => {
+    renderTable({ schema: PeopleSchema, data: PEOPLE });
+    const from = screen.getByLabelText("Filtrează Înscris — De la");
+    fireEvent.change(from, { target: { value: "2026-06-01" } });
+    expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
+    fireEvent.change(from, { target: { value: "" } });
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
   });
   it("filter activation resets pageIndex to 0", () => {
     renderTable({
@@ -229,8 +252,13 @@ describe("DataTable pagination", () => {
     fireEvent.change(select, { target: { value: "1" } });
     expect(screen.getAllByRole("row")).toHaveLength(3);
     fireEvent.click(screen.getByRole("button", { name: "Pagina următoare" }));
-    const data = screen.getAllByRole("row")[2]!;
-    expect(data.textContent).toMatch(/Bogdan/);
+    expect(screen.getAllByRole("row")[2]?.textContent).toMatch(/Bogdan/);
+    fireEvent.click(screen.getByRole("button", { name: "Pagina anterioară" }));
+    expect(screen.getAllByRole("row")[2]?.textContent).toMatch(/Ana/);
+    fireEvent.click(screen.getByRole("button", { name: "Ultima pagină" }));
+    expect(screen.getAllByRole("row")[2]?.textContent).toMatch(/carla/);
+    fireEvent.click(screen.getByRole("button", { name: "Prima pagină" }));
+    expect(screen.getAllByRole("row")[2]?.textContent).toMatch(/Ana/);
   });
   it("changing page size resets pageIndex to 0", () => {
     renderTable({

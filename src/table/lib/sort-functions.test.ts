@@ -21,6 +21,10 @@ describe("sortText helpers (empty-last + localeCompare)", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("treats equal normalized strings as a tie", () => {
+    expect(compareTextValues("ana", "ana")).toBe(0);
+  });
+
   it("pushes empty values after real strings", () => {
     expect(compareTextValues("", "ana")).toBeGreaterThan(0);
     expect(compareTextValues("ana", "")).toBeLessThan(0);

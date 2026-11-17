@@ -51,7 +51,7 @@ function FormattedCell({
   readonly descriptor: FieldDescriptor;
 }): React.JSX.Element {
   const labels = useLabels();
-  return <>{formatValue(value, descriptor, labels)}</>;
+  return <>{formatValue({ value, descriptor, labels })}</>;
 }
 
 function filterFnForKind<TData extends RowData>(kind: FieldKind) {

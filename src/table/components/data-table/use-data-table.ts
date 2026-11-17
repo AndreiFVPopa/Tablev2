@@ -2,43 +2,36 @@ import { useTable } from "@tanstack/react-table";
 import { useMemo } from "react";
 
 import { buildColumnsFromDescriptors, type TableColumnDef } from "@table/lib/column-factory";
-import { TABLE_FEATURES, type TableFeaturesConfig } from "@table/lib/table-features";
+import { TABLE_FEATURES } from "@table/lib/table-features";
 import { interpretSchema } from "@table/schema/index";
-import { resolveLabels, type TableLabels } from "@table/table-labels";
+import { resolveLabels } from "@table/table-labels";
 
-import type { DataTableState } from "@table/lib/table-state";
 import type {
-  ReactTable,
+  TableSchemaRow,
+  UseDataTableOptions,
+  UseDataTableResult,
+} from "./use-data-table.types";
+import type {
   ColumnFiltersState,
   PaginationState,
-  RowData,
   SortingState,
   Updater,
 } from "@tanstack/react-table";
 import type { z } from "zod";
-export interface UseDataTableOptions<TData extends RowData> {
-  readonly schema: z.ZodType;
-  readonly data: readonly TData[];
-  readonly state: DataTableState;
-  readonly onStateChange: (nextState: DataTableState) => void;
-  readonly labels?: Partial<TableLabels>;
-}
-export interface UseDataTableResult<TData extends RowData> {
-  readonly table: ReactTable<TableFeaturesConfig, TData>;
-  readonly columns: TableColumnDef<TData>[];
-  readonly resolvedLabels: TableLabels;
-}
-export function useDataTable<TData extends RowData>({
+
+export type { UseDataTableOptions, UseDataTableResult } from "./use-data-table.types";
+
+export function useDataTable<TSchema extends z.ZodObject>({
   schema,
   data,
   state,
   onStateChange,
   labels,
-}: UseDataTableOptions<TData>): UseDataTableResult<TData> {
+}: UseDataTableOptions<TSchema>): UseDataTableResult<TSchema> {
   const resolvedLabels = useMemo(() => resolveLabels(labels), [labels]);
-  const columns = useMemo<TableColumnDef<TData>[]>(() => {
+  const columns = useMemo<TableColumnDef<TableSchemaRow<TSchema>>[]>(() => {
     const { fields } = interpretSchema(schema);
-    return buildColumnsFromDescriptors<TData>(fields);
+    return buildColumnsFromDescriptors<TableSchemaRow<TSchema>>(fields);
   }, [schema]);
   const updatePagination = (updater: Updater<PaginationState>): void => {
     const nextPagination = typeof updater === "function" ? updater(state.pagination) : updater;

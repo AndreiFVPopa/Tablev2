@@ -9,16 +9,16 @@ import { TableHeader } from "./table-header";
 import { useDataTable } from "./use-data-table";
 
 import type { DataTableControlledProps } from "./data-table.types";
-import type { RowData } from "@tanstack/react-table";
+import type { z } from "zod";
 
-export function DataTableControlled<TData extends RowData>({
+export function DataTableControlled<TSchema extends z.ZodObject>({
   schema,
   data,
   state,
   onStateChange,
   labels,
   pageSizes = DEFAULT_PAGE_SIZES,
-}: DataTableControlledProps<TData>): React.JSX.Element {
+}: DataTableControlledProps<TSchema>): React.JSX.Element {
   const { table, columns, resolvedLabels } = useDataTable({
     schema,
     data,
@@ -30,14 +30,16 @@ export function DataTableControlled<TData extends RowData>({
   return (
     <LabelsProvider value={resolvedLabels}>
       <div className={styles.dataTable}>
-        <table className={styles.dataTable__table} aria-label={resolvedLabels.tableLandmark}>
-          <TableHeader table={table} />
-          <TableBody
-            table={table}
-            columnCount={columns.length}
-            emptyLabel={resolvedLabels.tableEmpty}
-          />
-        </table>
+        <div className={styles.dataTable__scroll}>
+          <table className={styles.dataTable__table} aria-label={resolvedLabels.tableLandmark}>
+            <TableHeader table={table} />
+            <TableBody
+              table={table}
+              columnCount={columns.length}
+              emptyLabel={resolvedLabels.tableEmpty}
+            />
+          </table>
+        </div>
         <DataTablePagination table={table} pageSizes={pageSizes} />
       </div>
     </LabelsProvider>

@@ -52,6 +52,8 @@ export type {
 } from "./filters/shared/filter-values.types";
 export { composeTableSearchValidator } from "./url/compose-search-validator";
 export type { ComposeTableSearchValidatorOptions } from "./url/compose-search-validator";
+export { SearchKeyCollisionError } from "./url/search-keys";
+export type { SearchKeyCollision } from "./url/search-keys";
 export { useDataTableUrlState } from "./hooks/use-data-table-url-state";
 export type {
   UseDataTableUrlStateOptions,

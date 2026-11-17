@@ -6,10 +6,9 @@ import { resolveFieldMeta } from "./resolve-field-meta";
 import { unwrapSchema } from "./unwrap-schema";
 
 import type { DiagnosticIssue, FieldDescriptor, InterpretationResult } from "./descriptors";
+import type { DescribeFieldInput, InterpretOptions, WalkObjectInput } from "./interpret.types";
 
-export interface InterpretOptions {
-  readonly throwOnDiagnostics?: boolean;
-}
+export type { InterpretOptions } from "./interpret.types";
 
 export class SchemaInterpretationError extends Error {
   readonly diagnostics: readonly DiagnosticIssue[];
@@ -41,16 +40,16 @@ export function interpretSchema(
     });
     return finalize({ fields, diagnostics }, options);
   }
-  walkObject(rootUnwrapped.inner, [], fields, diagnostics);
+  walkObject({
+    objectSchema: rootUnwrapped.inner,
+    parentSegments: [],
+    fields,
+    diagnostics,
+  });
   return finalize({ fields, diagnostics }, options);
 }
 
-function walkObject(
-  objectSchema: z.ZodObject,
-  parentSegments: readonly string[],
-  fields: FieldDescriptor[],
-  diagnostics: DiagnosticIssue[],
-): void {
+function walkObject({ objectSchema, parentSegments, fields, diagnostics }: WalkObjectInput): void {
   for (const rawKey of Object.keys(objectSchema.shape)) {
     const child = readObjectShapeChild(objectSchema, rawKey);
     if (child === undefined) continue;
@@ -65,7 +64,7 @@ function walkObject(
       });
       continue;
     }
-    describeField(child, segments, fields, diagnostics);
+    describeField({ schema: child, segments, fields, diagnostics });
   }
 }
 
@@ -77,28 +76,23 @@ function readObjectShapeChild(objectSchema: z.ZodObject, key: string): z.ZodType
   return child instanceof z.ZodType ? child : undefined;
 }
 
-function describeField(
-  schema: z.ZodType,
-  segments: readonly string[],
-  fields: FieldDescriptor[],
-  diagnostics: DiagnosticIssue[],
-): void {
+function describeField({ schema, segments, fields, diagnostics }: DescribeFieldInput): void {
   const { inner, wrappers } = unwrapSchema(schema);
   if (inner instanceof z.ZodObject) {
-    walkObject(inner, segments, fields, diagnostics);
+    walkObject({ objectSchema: inner, parentSegments: segments, fields, diagnostics });
     return;
   }
-  const meta = resolveFieldMeta(schema, segments, diagnostics);
-  const descriptor = buildLeafDescriptor(
+  const meta = resolveFieldMeta({ schema, segments, diagnostics });
+  const descriptor = buildLeafDescriptor({
     inner,
-    {
+    base: {
       path: segments.join("."),
       segments,
       meta,
       ...wrappers,
     },
     diagnostics,
-  );
+  });
   if (descriptor) {
     fields.push(descriptor);
   }

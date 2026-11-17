@@ -216,22 +216,30 @@ describe("interpretSchema — invalid metadata", () => {
     ]);
   });
 
-  it("diagnoses empty optionLabels values without discarding sibling valid labels", () => {
+  it("rejects an invalid table object as a whole, including a valid sibling property", () => {
     const schema = z.object({
       status: z.enum(["a", "b"]).meta({
+        title: "Status",
         table: {
+          hidden: true,
           optionLabels: { a: "Alpha", b: "" },
         },
       }),
+      other: z.string().meta({ title: "Other" }),
     });
     const { fields, diagnostics } = interpretSchema(schema);
-    expect(fields[0]?.meta.optionLabels).toEqual({ a: "Alpha" });
+    const status = fields.find((field) => field.path === "status");
+    expect(status?.meta.title).toBe("Status");
+    expect(status?.meta.hidden).toBe(false);
+    expect(status?.meta.optionLabels).toBeUndefined();
+    expect(fields.find((field) => field.path === "other")?.meta.title).toBe("Other");
     expect(diagnostics).toEqual([
       expect.objectContaining({
         code: "invalid-field-meta",
         path: "status",
       }),
     ]);
+    expect(diagnostics.some((issue) => issue.path === "other")).toBe(false);
   });
 
   it("diagnoses invalid title, deprecated, hidden, and urlParam while keeping defaults", () => {

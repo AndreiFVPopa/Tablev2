@@ -14,12 +14,14 @@ import { decodeDescriptorOption, encodeDescriptorOption } from "./option-encodin
 import { fieldUrlParam, filterKey } from "./search-keys";
 import { coerceFiniteNumber, coerceString } from "./search-values";
 
+import type { CodecColumnFiltersState, CodecOptions, SearchRecord } from "./codec.types";
 import type {
-  CodecColumnFiltersState,
-  CodecOptions,
-  EncodedSearchValue,
-  SearchRecord,
-} from "./codec.types";
+  EncodedFilterParts,
+  ReadFilterPartsInput,
+  ReadKeyedFilterPartsInput,
+  WriteEncodedFiltersInput,
+  WriteFilterPartsInput,
+} from "./filter-value-codec.types";
 import type {
   BooleanFilterValue,
   DateRangeFilterValue,
@@ -35,25 +37,22 @@ import type {
 
 type ScalarSearchInput = string | number | boolean | undefined;
 
-interface EncodedFilterParts {
-  readonly value?: EncodedSearchValue;
-  readonly min?: number;
-  readonly max?: number;
-  readonly from?: string;
-  readonly to?: string;
-}
-
-export function writeEncodedFilters(
-  encodedSearch: Record<string, EncodedSearchValue>,
-  columnFilters: CodecColumnFiltersState,
-  options: CodecOptions,
-): void {
+export function writeEncodedFilters({
+  encodedSearch,
+  columnFilters,
+  options,
+}: WriteEncodedFiltersInput): void {
   const filterValueById = new Map(columnFilters.map((filter) => [filter.id, filter.value]));
   for (const descriptor of options.fields) {
     const filterValue = filterValueById.get(descriptor.path);
     if (filterValue === undefined) continue;
     const parts = encodeFilterValue(filterValue, descriptor);
-    writeFilterParts(encodedSearch, fieldUrlParam(descriptor), parts, options.urlNamespace);
+    writeFilterParts({
+      encodedSearch,
+      urlParam: fieldUrlParam(descriptor),
+      parts,
+      urlNamespace: options.urlNamespace,
+    });
   }
 }
 
@@ -63,7 +62,7 @@ export function readEncodedFilters(
 ): CodecColumnFiltersState {
   const columnFilters: { id: string; value: unknown }[] = [];
   for (const descriptor of options.fields) {
-    const parts = readFilterParts(search, descriptor, options.urlNamespace);
+    const parts = readFilterParts({ search, descriptor, urlNamespace: options.urlNamespace });
     const filterValue = decodeFilterValue(parts, descriptor);
     if (filterValue !== undefined) {
       columnFilters.push({ id: descriptor.path, value: filterValue });
@@ -219,58 +218,72 @@ function decodeDateRangeFilter(parts: EncodedFilterParts): DateRangeFilterValue 
   });
 }
 
-function writeFilterParts(
-  encodedSearch: Record<string, EncodedSearchValue>,
-  urlParam: string,
-  parts: EncodedFilterParts,
-  urlNamespace: string | undefined,
-): void {
+function writeFilterParts({
+  encodedSearch,
+  urlParam,
+  parts,
+  urlNamespace,
+}: WriteFilterPartsInput): void {
   if (parts.value !== undefined) {
-    encodedSearch[filterKey(urlParam, undefined, urlNamespace)] = parts.value;
+    encodedSearch[filterKey({ urlParam, urlNamespace })] = parts.value;
   }
   if (parts.min !== undefined) {
-    encodedSearch[filterKey(urlParam, NUMBER_RANGE_BOUNDARY.MINIMUM, urlNamespace)] = parts.min;
+    encodedSearch[
+      filterKey({
+        urlParam,
+        rangeSubKey: NUMBER_RANGE_BOUNDARY.MINIMUM,
+        urlNamespace,
+      })
+    ] = parts.min;
   }
   if (parts.max !== undefined) {
-    encodedSearch[filterKey(urlParam, NUMBER_RANGE_BOUNDARY.MAXIMUM, urlNamespace)] = parts.max;
+    encodedSearch[
+      filterKey({
+        urlParam,
+        rangeSubKey: NUMBER_RANGE_BOUNDARY.MAXIMUM,
+        urlNamespace,
+      })
+    ] = parts.max;
   }
   if (parts.from !== undefined) {
-    encodedSearch[filterKey(urlParam, DATE_RANGE_BOUNDARY.FROM, urlNamespace)] = parts.from;
+    encodedSearch[filterKey({ urlParam, rangeSubKey: DATE_RANGE_BOUNDARY.FROM, urlNamespace })] =
+      parts.from;
   }
   if (parts.to !== undefined) {
-    encodedSearch[filterKey(urlParam, DATE_RANGE_BOUNDARY.TO, urlNamespace)] = parts.to;
+    encodedSearch[filterKey({ urlParam, rangeSubKey: DATE_RANGE_BOUNDARY.TO, urlNamespace })] =
+      parts.to;
   }
 }
 
-function readFilterParts(
-  search: SearchRecord,
-  descriptor: FieldDescriptor,
-  urlNamespace: string | undefined,
-): EncodedFilterParts {
+function readFilterParts({
+  search,
+  descriptor,
+  urlNamespace,
+}: ReadFilterPartsInput): EncodedFilterParts {
   const urlParam = fieldUrlParam(descriptor);
   switch (descriptor.kind) {
     case FIELD_KINDS.NUMERIC:
-      return readNumberRangeParts(search, urlParam, urlNamespace);
+      return readNumberRangeParts({ search, urlParam, urlNamespace });
     case FIELD_KINDS.DATE:
-      return readDateRangeParts(search, urlParam, urlNamespace);
+      return readDateRangeParts({ search, urlParam, urlNamespace });
     case FIELD_KINDS.TEXT:
     case FIELD_KINDS.ENUM:
     case FIELD_KINDS.BOOLEAN:
     case FIELD_KINDS.TAGS:
-      return readScalarFilterParts(search, urlParam, urlNamespace);
+      return readScalarFilterParts({ search, urlParam, urlNamespace });
   }
 }
 
-function readNumberRangeParts(
-  search: SearchRecord,
-  urlParam: string,
-  urlNamespace: string | undefined,
-): EncodedFilterParts {
+function readNumberRangeParts({
+  search,
+  urlParam,
+  urlNamespace,
+}: ReadKeyedFilterPartsInput): EncodedFilterParts {
   const min = coerceFiniteNumber(
-    search[filterKey(urlParam, NUMBER_RANGE_BOUNDARY.MINIMUM, urlNamespace)],
+    search[filterKey({ urlParam, rangeSubKey: NUMBER_RANGE_BOUNDARY.MINIMUM, urlNamespace })],
   );
   const max = coerceFiniteNumber(
-    search[filterKey(urlParam, NUMBER_RANGE_BOUNDARY.MAXIMUM, urlNamespace)],
+    search[filterKey({ urlParam, rangeSubKey: NUMBER_RANGE_BOUNDARY.MAXIMUM, urlNamespace })],
   );
   return {
     ...(min !== undefined ? { min } : {}),
@@ -278,26 +291,30 @@ function readNumberRangeParts(
   };
 }
 
-function readDateRangeParts(
-  search: SearchRecord,
-  urlParam: string,
-  urlNamespace: string | undefined,
-): EncodedFilterParts {
-  const from = coerceString(search[filterKey(urlParam, DATE_RANGE_BOUNDARY.FROM, urlNamespace)]);
-  const to = coerceString(search[filterKey(urlParam, DATE_RANGE_BOUNDARY.TO, urlNamespace)]);
+function readDateRangeParts({
+  search,
+  urlParam,
+  urlNamespace,
+}: ReadKeyedFilterPartsInput): EncodedFilterParts {
+  const from = coerceString(
+    search[filterKey({ urlParam, rangeSubKey: DATE_RANGE_BOUNDARY.FROM, urlNamespace })],
+  );
+  const to = coerceString(
+    search[filterKey({ urlParam, rangeSubKey: DATE_RANGE_BOUNDARY.TO, urlNamespace })],
+  );
   return {
     ...(from !== undefined ? { from } : {}),
     ...(to !== undefined ? { to } : {}),
   };
 }
 
-function readScalarFilterParts(
-  search: SearchRecord,
-  urlParam: string,
-  urlNamespace: string | undefined,
-): EncodedFilterParts {
+function readScalarFilterParts({
+  search,
+  urlParam,
+  urlNamespace,
+}: ReadKeyedFilterPartsInput): EncodedFilterParts {
   const parts: { value?: string | number | boolean } = {};
-  assignScalarFilterPart(parts, search[filterKey(urlParam, undefined, urlNamespace)]);
+  assignScalarFilterPart(parts, search[filterKey({ urlParam, urlNamespace })]);
   return parts;
 }
 

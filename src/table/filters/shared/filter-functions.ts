@@ -69,44 +69,53 @@ export function matchDateRange(cell: unknown, filter: DateRangeFilterValue): boo
   return true;
 }
 
-export function textFilterFn<TData extends RowData>(): FilterFn<TableFeaturesConfig, TData> {
-  return (row, columnId, value) => {
-    const filter = parseTextFilterValue(value);
-    return filter === undefined ? true : matchText(row.getValue(columnId), filter);
+function rememberParse<T>(
+  parse: (value: unknown) => T | undefined,
+): (value: unknown) => T | undefined {
+  let hasPrevious = false;
+  let previous: unknown;
+  let parsed: T | undefined;
+  return (value) => {
+    if (hasPrevious && Object.is(value, previous)) return parsed;
+    hasPrevious = true;
+    previous = value;
+    parsed = parse(value);
+    return parsed;
   };
+}
+
+function filterRows<TData extends RowData, TFilter>(
+  parse: (value: unknown) => TFilter | undefined,
+  match: (cell: unknown, filter: TFilter) => boolean,
+): FilterFn<TableFeaturesConfig, TData> {
+  const parseFilter = rememberParse(parse);
+  // eslint-disable-next-line max-params -- TanStack Table FilterFn requires (row, columnId, filterValue)
+  return (row, columnId, value) => {
+    const filter = parseFilter(value);
+    return filter === undefined ? true : match(row.getValue(columnId), filter);
+  };
+}
+
+export function textFilterFn<TData extends RowData>(): FilterFn<TableFeaturesConfig, TData> {
+  return filterRows(parseTextFilterValue, matchText);
 }
 
 export function numberRangeFilterFn<TData extends RowData>(): FilterFn<TableFeaturesConfig, TData> {
-  return (row, columnId, value) => {
-    const filter = parseNumberRangeFilterValue(value);
-    return filter === undefined ? true : matchNumberRange(row.getValue(columnId), filter);
-  };
+  return filterRows(parseNumberRangeFilterValue, matchNumberRange);
 }
 
 export function enumFilterFn<TData extends RowData>(): FilterFn<TableFeaturesConfig, TData> {
-  return (row, columnId, value) => {
-    const filter = parseEnumFilterValue(value);
-    return filter === undefined ? true : matchEnum(row.getValue(columnId), filter);
-  };
+  return filterRows(parseEnumFilterValue, matchEnum);
 }
 
 export function booleanFilterFn<TData extends RowData>(): FilterFn<TableFeaturesConfig, TData> {
-  return (row, columnId, value) => {
-    const filter = parseBooleanFilterValue(value);
-    return filter === undefined ? true : matchBoolean(row.getValue(columnId), filter);
-  };
+  return filterRows(parseBooleanFilterValue, matchBoolean);
 }
 
 export function tagsFilterFn<TData extends RowData>(): FilterFn<TableFeaturesConfig, TData> {
-  return (row, columnId, value) => {
-    const filter = parseTagsFilterValue(value);
-    return filter === undefined ? true : matchTags(row.getValue(columnId), filter);
-  };
+  return filterRows(parseTagsFilterValue, matchTags);
 }
 
 export function dateRangeFilterFn<TData extends RowData>(): FilterFn<TableFeaturesConfig, TData> {
-  return (row, columnId, value) => {
-    const filter = parseDateRangeFilterValue(value);
-    return filter === undefined ? true : matchDateRange(row.getValue(columnId), filter);
-  };
+  return filterRows(parseDateRangeFilterValue, matchDateRange);
 }
