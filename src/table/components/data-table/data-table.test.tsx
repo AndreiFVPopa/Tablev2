@@ -349,6 +349,19 @@ describe("DataTable controlled state", () => {
     const last = changes.at(-1)!;
     expect(last.columnFilters.some((f) => f.id === "name")).toBe(true);
     expect(last.pagination.pageIndex).toBe(0);
+    act(() => {
+      fireEvent.click(screen.getByRole("radio", { name: "Nu" }));
+    });
+    const withFalse = changes.at(-1)!;
+    expect(withFalse.columnFilters).toContainEqual({ id: "active", value: false });
+    expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    act(() => {
+      fireEvent.click(screen.getByRole("radio", { name: "Toate" }));
+    });
+    const cleared = changes.at(-1)!;
+    expect(cleared.columnFilters.some((filter) => filter.id === "active")).toBe(false);
+    expect(cleared.columnFilters.some((filter) => filter.id === "name")).toBe(true);
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
   });
   it("treats external state as authoritative — no competing internal copy", () => {
     function ExternalDriver(): React.JSX.Element {

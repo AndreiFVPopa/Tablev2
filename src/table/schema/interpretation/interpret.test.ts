@@ -181,4 +181,74 @@ describe("interpretSchema — option URL encoding configuration", () => {
       ]);
     }
   });
+
+  it("accepts positional and slug encoding on boolean fields", () => {
+    const positional = interpretSchema(
+      z.object({
+        active: z.boolean().meta({
+          table: { urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL },
+        }),
+      }),
+    );
+    expect(positional.diagnostics).toEqual([]);
+    expect(positional.fields[0]?.meta.urlValueEncoding).toBe(URL_VALUE_ENCODINGS.POSITIONAL);
+    const slug = interpretSchema(
+      z.object({
+        active: z.boolean().meta({
+          table: { urlValueEncoding: URL_VALUE_ENCODINGS.SLUG },
+        }),
+      }),
+    );
+    expect(slug.diagnostics).toEqual([]);
+    expect(slug.fields[0]?.meta.urlValueEncoding).toBe(URL_VALUE_ENCODINGS.SLUG);
+  });
+
+  it("throws when a positional token names a different enum option", () => {
+    const schema = z.object({
+      code: z.enum(["alpha", "2"]).meta({
+        table: { urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL },
+      }),
+    });
+    expect(() => interpretSchema(schema)).toThrow(SchemaInterpretationError);
+    try {
+      interpretSchema(schema);
+    } catch (error) {
+      expect(error).toBeInstanceOf(SchemaInterpretationError);
+      if (!(error instanceof SchemaInterpretationError)) return;
+      expect(error.diagnostics).toEqual([
+        expect.objectContaining({
+          code: DIAGNOSTIC_CODES.URL_POSITION_COLLISION,
+          path: "code",
+        }),
+      ]);
+    }
+    const safe = interpretSchema(
+      z.object({
+        code: z.enum(["1", "alpha"]).meta({
+          table: { urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL },
+        }),
+      }),
+    );
+    expect(safe.diagnostics).toEqual([]);
+    const labeled = interpretSchema(
+      z.object({
+        gender: z.enum(["male", "female"]).meta({
+          table: {
+            urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL,
+            optionLabels: { male: "Masculin", female: "Feminin" },
+          },
+        }),
+      }),
+    );
+    expect(labeled.diagnostics).toEqual([]);
+    const ambiguousLabel = z.object({
+      gender: z.enum(["male", "female"]).meta({
+        table: {
+          urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL,
+          optionLabels: { female: "1" },
+        },
+      }),
+    });
+    expect(() => interpretSchema(ambiguousLabel)).toThrow(SchemaInterpretationError);
+  });
 });

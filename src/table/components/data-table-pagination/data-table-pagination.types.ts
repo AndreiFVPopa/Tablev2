@@ -14,6 +14,7 @@ export interface DataTablePaginationViewModel {
   readonly pageSizes: readonly number[];
   readonly canPrevious: boolean;
   readonly canNext: boolean;
+  readonly canLast: boolean;
   readonly landmark: string;
   readonly pageSizeLabel: string;
   readonly summary: string;

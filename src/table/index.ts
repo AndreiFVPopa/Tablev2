@@ -36,6 +36,8 @@ export {
 } from "./url/codec/option-encoding";
 export { DataTable, DEFAULT_PAGE_SIZES } from "./components/data-table";
 export type { DataTableProps } from "./components/data-table";
+export { DATA_MODES } from "./lib/state/data-mode.constants";
+export type { DataMode } from "./lib/state/data-mode.constants";
 export { createDefaultTableState } from "./lib/state/table-state";
 export { DEFAULT_PAGE_SIZE, resolveDefaultPageSize } from "./lib/state/page-sizes";
 export type { DataTableState } from "./lib/state/table-state";

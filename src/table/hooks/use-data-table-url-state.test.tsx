@@ -312,6 +312,161 @@ describe("URL-backed DataTable — copied under an unrelated route", () => {
     expect(within(firstData).getAllByRole("cell")[0]!.textContent).toBe("Beta");
   });
 });
+describe("URL-backed boolean and enum encodings", () => {
+  const EncodedSchema = z.object({
+    name: z.string().meta({ title: "Nume" }),
+    active: z.boolean().meta({
+      title: "Activ",
+      table: { urlValueEncoding: "positional" },
+    }),
+    status: z.enum(["new", "done"]).meta({
+      title: "Status",
+      table: { urlValueEncoding: "positional" },
+    }),
+  });
+  const ROWS = [
+    { name: "Ana", active: true, status: "new" as const },
+    { name: "Bogdan", active: false, status: "done" as const },
+  ];
+  const PAGE_SIZES = [10, 25] as const;
+
+  function buildEncodedRouter(initialEntry: string) {
+    const rootRoute = createRootRoute({ component: () => <Outlet /> });
+    const encodedRoute = createRoute({
+      getParentRoute: () => rootRoute,
+      path: "/encoded",
+      validateSearch: composeTableSearchValidator(EncodedSchema, {
+        pageSizes: PAGE_SIZES,
+        defaultPageSize: 10,
+      }),
+      component: function EncodedPage() {
+        return (
+          <DataTable
+            schema={EncodedSchema}
+            data={ROWS}
+            pageSizes={PAGE_SIZES}
+            labels={{ tableLandmark: "Encoded table" }}
+          />
+        );
+      },
+    });
+    const history = createMemoryHistory({ initialEntries: [initialEntry] });
+    const router = createRouter({
+      routeTree: rootRoute.addChildren([encodedRoute]),
+      history,
+      defaultPreload: false,
+    });
+    return { router, history };
+  }
+
+  async function mountEncoded(initialEntry: string) {
+    const { router, history } = buildEncodedRouter(initialEntry);
+    await act(async () => {
+      await router.load();
+    });
+    const view = render(<RouterProvider router={router} />);
+    return { router, history, ...view };
+  }
+
+  it("preserves valid aliases until a filter changes and keeps unrelated params", async () => {
+    const { history } = await mountEncoded("/encoded?active=false&status=done&utm=share");
+    await waitFor(() => {
+      expect(history.location.search).toMatch(/active=false/);
+      expect(history.location.search).toMatch(/status=done/);
+      expect(history.location.search).toMatch(/utm=share/);
+    });
+    expect(history.location.search).not.toMatch(/active=2/);
+    expect(history.location.search).not.toMatch(/status=2/);
+    expect(screen.getByRole("radio", { name: "Nu" })).toBeChecked();
+    expect(screen.getByRole("combobox", { name: /Filtrează Status/ })).toHaveValue("done");
+    expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
+    expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Sortează Nume/i }));
+    await waitFor(() => {
+      expect(history.location.search).toMatch(/sort=name/);
+    });
+    expect(history.location.search).toMatch(/active=false/);
+    expect(history.location.search).toMatch(/status=done/);
+    fireEvent.click(screen.getByRole("radio", { name: "Da" }));
+    await waitFor(() => {
+      expect(history.location.search).toMatch(/active=1/);
+    });
+    expect(history.location.search).toMatch(/status=done/);
+    expect(history.location.search).not.toMatch(/active=false/);
+  });
+
+  it("accepts a positional true token and clears false back to no filter", async () => {
+    const { history } = await mountEncoded("/encoded?page=1&pageSize=10&sort=&active=1");
+    await waitFor(() => {
+      expect(screen.getByRole("radio", { name: "Da" })).toBeChecked();
+    });
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
+    expect(screen.queryByRole("cell", { name: "Bogdan" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "Nu" }));
+    await waitFor(() => {
+      expect(history.location.search).toMatch(/active=2/);
+    });
+    expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("radio", { name: "Toate" }));
+    await waitFor(() => {
+      expect(history.location.search).not.toMatch(/active=/);
+    });
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
+  });
+
+  it("drops an invalid positional boolean token and preserves unrelated params", async () => {
+    const { history } = await mountEncoded("/encoded?page=1&pageSize=10&sort=&active=0&utm=keep");
+    await waitFor(() => {
+      expect(history.location.search).not.toMatch(/active=/);
+      expect(history.location.search).toMatch(/utm=keep/);
+    });
+    expect(screen.getByRole("radio", { name: "Toate" })).toBeChecked();
+    expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
+  });
+
+  it("restores positional boolean false across back, forward, and refresh", async () => {
+    const { history, unmount } = await mountEncoded("/encoded?page=1&pageSize=10&sort=");
+    await waitFor(() => {
+      expect(screen.getByRole("table", { name: "Encoded table" })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("radio", { name: "Nu" }));
+    await waitFor(() => {
+      expect(history.location.search).toMatch(/active=2/);
+      expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    });
+    act(() => {
+      history.back();
+    });
+    await waitFor(() => {
+      expect(history.location.search).not.toMatch(/active=/);
+      expect(screen.getByRole("cell", { name: "Ana" })).toBeInTheDocument();
+    });
+    act(() => {
+      history.forward();
+    });
+    await waitFor(() => {
+      expect(history.location.search).toMatch(/active=2/);
+      expect(screen.getByRole("radio", { name: "Nu" })).toBeChecked();
+      expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    });
+    const snapshot = history.location.search;
+    unmount();
+    const remounted = buildEncodedRouter(`/encoded${snapshot}`);
+    await act(async () => {
+      await remounted.router.load();
+    });
+    render(<RouterProvider router={remounted.router} />);
+    await waitFor(() => {
+      expect(screen.getByRole("radio", { name: "Nu" })).toBeChecked();
+      expect(screen.getByRole("cell", { name: "Bogdan" })).toBeInTheDocument();
+      expect(screen.queryByRole("cell", { name: "Ana" })).not.toBeInTheDocument();
+    });
+  });
+});
+
 describe("src/table portability", () => {
   it("does not import application-specific modules", async () => {
     const modules = import.meta.glob("../*.{ts,tsx}", { query: "?raw", import: "default" });

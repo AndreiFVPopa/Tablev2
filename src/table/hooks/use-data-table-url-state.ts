@@ -1,9 +1,13 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
 
-import { decodeTableState, encodeTableState } from "../url/codec/table-state-codec";
+import { decodeTableState } from "../url/codec/table-state-codec";
 import { resolveCodecOptions } from "../url/validation/resolve-codec-options";
-import { shallowEqual, stripTableKeys } from "../url/validation/search-canonical";
+import {
+  encodeTableStateRetainingAliases,
+  shallowEqual,
+  stripTableKeys,
+} from "../url/validation/search-canonical";
 
 import type { DataTableState } from "../lib/state/table-state";
 import type { SearchRecord } from "../url/codec/codec.types";
@@ -44,7 +48,11 @@ export function useDataTableUrlState({
   const navigate = useNavigate();
   const onStateChange = useCallback(
     (nextState: DataTableState) => {
-      const nextTableKeys = encodeTableState(nextState, codecOptions);
+      const nextTableKeys = encodeTableStateRetainingAliases({
+        tableState: nextState,
+        options: codecOptions,
+        currentSearch: search,
+      });
       const preserved = stripTableKeys(search, codecOptions);
       const mergedSearch = { ...preserved, ...nextTableKeys };
       if (shallowEqual(mergedSearch, search)) return;

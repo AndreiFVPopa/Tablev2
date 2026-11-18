@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { interpretSchema } from "../../schema/index";
+import { interpretSchema, URL_VALUE_ENCODINGS } from "../../schema/index";
 import { composeTableSearchValidator } from "../validation/compose-search-validator";
 import { createCodecOptions } from "../validation/resolve-codec-options";
-import { canonicaliseSearch, shallowEqual, stripTableKeys } from "../validation/search-canonical";
+import {
+  canonicaliseSearch,
+  encodeTableStateRetainingAliases,
+  shallowEqual,
+  stripTableKeys,
+} from "../validation/search-canonical";
 
 import { decodeSort, encodeSort } from "./sort-codec";
 import {
@@ -150,11 +155,20 @@ describe("decodeTableState", () => {
     const encoded = encodeTableState(original, opts);
     expect(decodeTableState(encoded, opts)).toEqual(original);
   });
-  it("reads boolean true from a boolean, the string true, and 1", () => {
-    for (const active of [true, "true", "1"] as const) {
+  it("reads canonical boolean true and false, and ignores numeric tokens", () => {
+    for (const active of [true, "true"] as const) {
       const decoded = decodeTableState({ active }, options());
       expect(decoded.columnFilters).toEqual([{ id: "active", value: true }]);
     }
+    expect(decodeTableState({ active: false }, options()).columnFilters).toEqual([
+      { id: "active", value: false },
+    ]);
+    expect(decodeTableState({ active: "false" }, options()).columnFilters).toEqual([
+      { id: "active", value: false },
+    ]);
+    expect(decodeTableState({ active: "1" }, options()).columnFilters).toEqual([]);
+    expect(decodeTableState({ active: "0" }, options()).columnFilters).toEqual([]);
+    expect(decodeTableState({ active: "2" }, options()).columnFilters).toEqual([]);
   });
   it("falls back to the default pageSize when the value is not allowed and drops invalid filters", () => {
     const decoded = decodeTableState(
@@ -466,5 +480,185 @@ describe("URL value encodings", () => {
     expect(decodeTableState({ tags: "bursa,unknown,olimpic" }, opts).columnFilters).toEqual([
       { id: "tags", value: [...diacriticTagOptions] },
     ]);
+  });
+
+  it("decodes a positional enum from its position, canonical value, or display label", () => {
+    const opts = encodedOptions();
+    expect(decodeTableState({ gen: "female" }, opts).columnFilters).toEqual([
+      { id: "gender", value: "female" },
+    ]);
+    expect(decodeTableState({ gen: "1" }, opts).columnFilters).toEqual([
+      { id: "gender", value: "male" },
+    ]);
+    for (const gen of ["masculin", "Masculin", "MASCULIN", "%6D%61%73%63%75%6C%69%6E"] as const) {
+      expect(decodeTableState({ gen }, opts).columnFilters).toEqual([
+        { id: "gender", value: "male" },
+      ]);
+    }
+    expect(decodeTableState({ gen: "feminin" }, opts).columnFilters).toEqual([
+      { id: "gender", value: "female" },
+    ]);
+    const canonicalised = canonicaliseSearch({ gen: "masculin", tab: "list" }, opts);
+    expect(canonicalised.gen).toBe("masculin");
+    expect(canonicalised.tab).toBe("list");
+    const decoded = decodeTableState({ gen: "masculin" }, opts);
+    const paged = encodeTableStateRetainingAliases({
+      tableState: { ...decoded, pagination: { pageIndex: 1, pageSize: 25 } },
+      options: opts,
+      currentSearch: { gen: "masculin" },
+    });
+    expect(paged.gen).toBe("masculin");
+    expect(paged.page).toBe(2);
+    const changed = encodeTableStateRetainingAliases({
+      tableState: { ...decoded, columnFilters: [{ id: "gender", value: "female" }] },
+      options: opts,
+      currentSearch: { gen: "masculin" },
+    });
+    expect(changed.gen).toBe(2);
+    const dropped = canonicaliseSearch({ gen: "nope", utm: "keep" }, opts);
+    expect(dropped.gen).toBeUndefined();
+    expect(Object.hasOwn(dropped, "gen")).toBe(true);
+    expect(dropped.utm).toBe("keep");
+  });
+
+  it("decodes a namespaced display-label alias and canonicalises it", () => {
+    const { fields } = interpretSchema(EncodedSchema);
+    const opts = createCodecOptions({
+      fields,
+      urlNamespace: "students",
+      defaultPageSize: 25,
+      pageSizes: PAGE_SIZES,
+    });
+    expect(decodeTableState({ "students.gen": "masculin" }, opts).columnFilters).toEqual([
+      { id: "gender", value: "male" },
+    ]);
+    const canonicalised = canonicaliseSearch({ "students.gen": "Feminin", utm: "keep" }, opts);
+    expect(canonicalised["students.gen"]).toBe("Feminin");
+    expect(canonicalised.utm).toBe("keep");
+  });
+
+  it("does not decode an ambiguous positional enum token", () => {
+    const AmbiguousSchema = z.object({
+      code: z.enum(["alpha", "2"]).meta({
+        table: { urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL },
+      }),
+    });
+    expect(() => interpretSchema(AmbiguousSchema)).toThrow();
+    const SafeSchema = z.object({
+      code: z.enum(["1", "alpha"]).meta({
+        table: { urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL },
+      }),
+    });
+    const { fields } = interpretSchema(SafeSchema);
+    const opts = createCodecOptions({
+      fields,
+      defaultPageSize: 25,
+      pageSizes: PAGE_SIZES,
+    });
+    expect(decodeTableState({ code: "1" }, opts).columnFilters).toEqual([
+      { id: "code", value: "1" },
+    ]);
+    expect(decodeTableState({ code: 2 }, opts).columnFilters).toEqual([
+      { id: "code", value: "alpha" },
+    ]);
+  });
+});
+
+describe("boolean URL encodings", () => {
+  function booleanOptions(
+    encoding: (typeof URL_VALUE_ENCODINGS)[keyof typeof URL_VALUE_ENCODINGS],
+    urlNamespace?: string,
+  ) {
+    const schema = z.object({
+      active: z.boolean().meta({
+        title: "Activ",
+        table: { urlValueEncoding: encoding },
+      }),
+    });
+    const { fields } = interpretSchema(schema);
+    return createCodecOptions({
+      fields,
+      ...(urlNamespace !== undefined ? { urlNamespace } : {}),
+      defaultPageSize: 25,
+      pageSizes: PAGE_SIZES,
+    });
+  }
+
+  it("encodes canonical and slug booleans as true and false", () => {
+    for (const encoding of [URL_VALUE_ENCODINGS.CANONICAL, URL_VALUE_ENCODINGS.SLUG] as const) {
+      const opts = booleanOptions(encoding);
+      expect(
+        encodeTableState(defaultState({ columnFilters: [{ id: "active", value: true }] }), opts)
+          .active,
+      ).toBe(true);
+      expect(
+        encodeTableState(defaultState({ columnFilters: [{ id: "active", value: false }] }), opts)
+          .active,
+      ).toBe(false);
+      expect(decodeTableState({ active: "true" }, opts).columnFilters).toEqual([
+        { id: "active", value: true },
+      ]);
+      expect(decodeTableState({ active: "false" }, opts).columnFilters).toEqual([
+        { id: "active", value: false },
+      ]);
+      expect(decodeTableState({ active: "1" }, opts).columnFilters).toEqual([]);
+      expect(decodeTableState({ active: "2" }, opts).columnFilters).toEqual([]);
+      expect(decodeTableState({}, opts).columnFilters).toEqual([]);
+    }
+  });
+
+  it("encodes positional booleans as 1 and 2 and accepts canonical tokens", () => {
+    const opts = booleanOptions(URL_VALUE_ENCODINGS.POSITIONAL);
+    const encodedTrue = encodeTableState(
+      defaultState({ columnFilters: [{ id: "active", value: true }] }),
+      opts,
+    );
+    const encodedFalse = encodeTableState(
+      defaultState({ columnFilters: [{ id: "active", value: false }] }),
+      opts,
+    );
+    expect(encodedTrue.active).toBe(1);
+    expect(encodedFalse.active).toBe(2);
+    expect(encodedFalse.active).not.toBe(false);
+    for (const active of [1, "1", true, "true"] as const) {
+      expect(decodeTableState({ active }, opts).columnFilters).toEqual([
+        { id: "active", value: true },
+      ]);
+    }
+    for (const active of [2, "2", false, "false"] as const) {
+      expect(decodeTableState({ active }, opts).columnFilters).toEqual([
+        { id: "active", value: false },
+      ]);
+    }
+    for (const active of [0, "0", "3", "yes"] as const) {
+      expect(decodeTableState({ active }, opts).columnFilters).toEqual([]);
+    }
+    const dropped = canonicaliseSearch({ active: 0, utm: "keep" }, opts);
+    expect(dropped.active).toBeUndefined();
+    expect(Object.hasOwn(dropped, "active")).toBe(true);
+    expect(dropped.utm).toBe("keep");
+    const canonicalised = canonicaliseSearch({ active: "false", utm: "share" }, opts);
+    expect(canonicalised.active).toBe("false");
+    expect(canonicalised.utm).toBe("share");
+    expect(canonicaliseSearch({ active: true }, opts).active).toBe(true);
+    expect(canonicaliseSearch({ active: 1 }, opts).active).toBe(1);
+  });
+
+  it("prefixes positional boolean keys and keeps false distinct from an absent filter", () => {
+    const opts = booleanOptions(URL_VALUE_ENCODINGS.POSITIONAL, "students");
+    const encoded = encodeTableState(
+      defaultState({ columnFilters: [{ id: "active", value: false }] }),
+      opts,
+    );
+    expect(encoded["students.active"]).toBe(2);
+    expect(encoded.active).toBeUndefined();
+    expect(decodeTableState({ "students.active": "2" }, opts).columnFilters).toEqual([
+      { id: "active", value: false },
+    ]);
+    expect(decodeTableState({ "students.active": "false" }, opts).columnFilters).toEqual([
+      { id: "active", value: false },
+    ]);
+    const absent = encodeTableState(defaultState({ columnFilters: [] }), opts);
+    expect(absent["students.active"]).toBeUndefined();
   });
 });

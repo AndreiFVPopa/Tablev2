@@ -85,6 +85,7 @@ describe("schema interpreter — public API surface", () => {
     expectTypeOf<DecodeArgs[0]>().toHaveProperty("optionValues");
     expectTypeOf<DecodeArgs[0]>().toHaveProperty("encoding");
     expectTypeOf<DecodeArgs[0]>().toHaveProperty("slugOverrides");
+    expectTypeOf<DecodeArgs[0]>().toHaveProperty("optionLabels");
     function rejectPositionalOptionTokens(): void {
       // @ts-expect-error public option helpers take one options object, not positional strings
       encodeOptionToUrlToken(diacriticOption, [diacriticOption], encoding);

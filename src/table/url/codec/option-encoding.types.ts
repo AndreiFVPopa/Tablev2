@@ -14,6 +14,7 @@ export interface DecodeOptionFromUrlTokenInput {
   readonly urlToken: string;
   readonly optionValues: readonly string[];
   readonly encoding: UrlValueEncoding;
+  readonly optionLabels?: Readonly<Record<string, string>> | undefined;
   readonly slugOverrides?: Readonly<Record<string, string>> | undefined;
 }
 

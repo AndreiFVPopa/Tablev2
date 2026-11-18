@@ -1,4 +1,5 @@
 import { toUrlSlug } from "@table/lib/to-url-slug";
+import { optionForPositionalAlias } from "@table/schema/encoding/option-encoding-config";
 import { URL_VALUE_ENCODINGS } from "@table/schema/url-value-encoding.constants";
 
 import type {
@@ -35,13 +36,19 @@ export function decodeOptionFromUrlToken({
   urlToken,
   optionValues,
   encoding,
+  optionLabels,
   slugOverrides,
 }: DecodeOptionFromUrlTokenInput): string | undefined {
   switch (encoding) {
     case URL_VALUE_ENCODINGS.CANONICAL:
       return optionValues.includes(urlToken) ? urlToken : undefined;
     case URL_VALUE_ENCODINGS.POSITIONAL:
-      return decodePositionalUrlToken(urlToken, optionValues);
+      return optionForPositionalAlias({
+        urlToken: percentDecodeUrlToken(urlToken),
+        optionValues,
+        ...(optionLabels !== undefined ? { optionLabels } : {}),
+        ...(slugOverrides !== undefined ? { slugOverrides } : {}),
+      });
     case URL_VALUE_ENCODINGS.SLUG:
       return decodeSlugUrlToken({ urlToken, optionValues, slugOverrides });
   }
@@ -67,20 +74,22 @@ export function decodeDescriptorOption(
     urlToken,
     optionValues: descriptor.options,
     encoding: descriptor.meta.urlValueEncoding,
-    slugOverrides: descriptor.meta.urlSlugOverrides,
+    ...(descriptor.meta.optionLabels !== undefined
+      ? { optionLabels: descriptor.meta.optionLabels }
+      : {}),
+    ...(descriptor.meta.urlSlugOverrides !== undefined
+      ? { slugOverrides: descriptor.meta.urlSlugOverrides }
+      : {}),
   });
 }
 
-function decodePositionalUrlToken(
-  urlToken: string,
-  optionValues: readonly string[],
-): string | undefined {
-  if (!/^[1-9]\d*$/.test(urlToken)) return undefined;
-  const position = Number(urlToken);
-  if (!Number.isInteger(position) || position < 1 || position > optionValues.length) {
-    return undefined;
+function percentDecodeUrlToken(urlToken: string): string {
+  if (!urlToken.includes("%")) return urlToken;
+  try {
+    return decodeURIComponent(urlToken);
+  } catch {
+    return urlToken;
   }
-  return optionValues[position - 1];
 }
 
 function decodeSlugUrlToken({

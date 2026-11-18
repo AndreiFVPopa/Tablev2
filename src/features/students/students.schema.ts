@@ -44,7 +44,10 @@ export const studentSchema = z
         optionLabels: STUDENT_GENDER_LABELS,
       },
     }),
-    active: z.boolean().meta({ title: "Activ" }),
+    active: z.boolean().meta({
+      title: "Activ",
+      table: { urlValueEncoding: URL_VALUE_ENCODINGS.POSITIONAL },
+    }),
     enrolledAt: z.coerce.date().meta({ title: "Înscris" }),
     gpa: z.number().min(1).max(10).nullable().optional().meta({ title: "Media" }),
     tags: z.array(studentTagSchema).meta({

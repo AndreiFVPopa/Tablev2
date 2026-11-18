@@ -9,12 +9,18 @@ export function useDataTablePagination<TData extends RowData>(
 ): DataTablePaginationViewModel {
   const labels = useLabels();
   const { pageIndex, pageSize } = table.state.pagination;
-  const totalRows = table.getFilteredRowModel().rows.length;
-  const pageCount = Math.max(table.getPageCount(), 1);
-  const start = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
-  const end = Math.min((pageIndex + 1) * pageSize, totalRows);
+  const unknownTotal = table.options.pageCount === -1;
+  const visibleRows = table.getRowModel().rows.length;
+  const totalRows = unknownTotal ? visibleRows : table.getRowCount();
+  const pageCount = unknownTotal ? 0 : Math.max(table.getPageCount(), 1);
+  const start = visibleRows === 0 ? 0 : pageIndex * pageSize + 1;
+  const end = visibleRows === 0 ? 0 : start + visibleRows - 1;
   const canPrevious = table.getCanPreviousPage();
-  const canNext = table.getCanNextPage();
+  const canNext = unknownTotal
+    ? visibleRows > 0 && visibleRows === pageSize
+    : table.getCanNextPage();
+  const canLast = unknownTotal ? false : table.getCanLastPage();
+  const range = `${String(start)}–${String(end)}`;
   return {
     pageIndex,
     pageSize,
@@ -25,10 +31,13 @@ export function useDataTablePagination<TData extends RowData>(
     pageSizes,
     canPrevious,
     canNext,
+    canLast,
     landmark: labels.paginationLandmark,
     pageSizeLabel: labels.paginationPageSize,
-    summary: `${String(start)}–${String(end)} ${labels.paginationRowsOf} ${String(totalRows)}`,
-    pageOf: `${String(pageIndex + 1)} ${labels.paginationPageOf} ${String(pageCount)}`,
+    summary: unknownTotal ? range : `${range} ${labels.paginationRowsOf} ${String(totalRows)}`,
+    pageOf: unknownTotal
+      ? String(pageIndex + 1)
+      : `${String(pageIndex + 1)} ${labels.paginationPageOf} ${String(pageCount)}`,
     firstLabel: labels.paginationFirst,
     previousLabel: labels.paginationPrevious,
     nextLabel: labels.paginationNext,
@@ -46,6 +55,7 @@ export function useDataTablePagination<TData extends RowData>(
       table.nextPage();
     },
     onLast: () => {
+      if (pageCount < 1) return;
       table.setPageIndex(pageCount - 1);
     },
   };

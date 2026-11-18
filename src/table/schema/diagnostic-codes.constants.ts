@@ -8,6 +8,7 @@ export const DIAGNOSTIC_CODES = {
   INVALID_FIELD_META: "invalid-field-meta",
   URL_VALUE_ENCODING_UNSUPPORTED: "url-value-encoding-unsupported",
   URL_SLUG_COLLISION: "url-slug-collision",
+  URL_POSITION_COLLISION: "url-position-collision",
 } as const;
 
 export type DiagnosticCode = (typeof DIAGNOSTIC_CODES)[keyof typeof DIAGNOSTIC_CODES];

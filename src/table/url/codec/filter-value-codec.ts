@@ -6,13 +6,18 @@ import {
   parseTagsFilterValue,
   parseTextFilterValue,
 } from "@table/filters/shared/parse-filter-value";
+import { BOOLEAN_CANONICAL_OPTIONS } from "@table/schema/encoding/option-encoding-config";
 import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
 import { URL_VALUE_ENCODINGS } from "@table/schema/url-value-encoding.constants";
 
 import { fieldUrlParam, filterKey } from "../search-keys/search-keys";
 
-import { BOOLEAN_URL_VALUE } from "./boolean-url.constants";
-import { decodeDescriptorOption, encodeDescriptorOption } from "./option-encoding";
+import {
+  decodeDescriptorOption,
+  decodeOptionFromUrlToken,
+  encodeDescriptorOption,
+  encodeOptionToUrlToken,
+} from "./option-encoding";
 import { coerceFiniteNumber, coerceString } from "./search-values";
 
 import type { CodecColumnFiltersState, CodecOptions, SearchRecord } from "./codec.types";
@@ -31,6 +36,7 @@ import type {
   TagsFilterValue,
 } from "@table/filters/shared/filter-values.types";
 import type {
+  BooleanFieldDescriptor,
   EnumFieldDescriptor,
   FieldDescriptor,
   TagsFieldDescriptor,
@@ -79,7 +85,7 @@ function encodeFilterValue(value: unknown, descriptor: FieldDescriptor): Encoded
     case FIELD_KINDS.ENUM:
       return encodeEnumFilter(value, descriptor);
     case FIELD_KINDS.BOOLEAN:
-      return encodeBooleanFilter(value);
+      return encodeBooleanFilter(value, descriptor);
     case FIELD_KINDS.TAGS:
       return encodeTagsFilter(value, descriptor);
     case FIELD_KINDS.NUMERIC:
@@ -96,7 +102,7 @@ function decodeFilterValue(parts: EncodedFilterParts, descriptor: FieldDescripto
     case FIELD_KINDS.ENUM:
       return decodeEnumFilter(parts.value, descriptor);
     case FIELD_KINDS.BOOLEAN:
-      return decodeBooleanFilter(parts.value);
+      return decodeBooleanFilter(parts.value, descriptor);
     case FIELD_KINDS.TAGS:
       return decodeTagsFilter(parts.value, descriptor);
     case FIELD_KINDS.NUMERIC:
@@ -122,10 +128,20 @@ function encodeEnumFilter(value: unknown, descriptor: EnumFieldDescriptor): Enco
   return { value: token };
 }
 
-function encodeBooleanFilter(value: unknown): EncodedFilterParts {
-  if (value === true) return { value: true };
-  if (value === false) return { value: false };
-  return {};
+function encodeBooleanFilter(
+  value: unknown,
+  descriptor: BooleanFieldDescriptor,
+): EncodedFilterParts {
+  if (value !== true && value !== false) return {};
+  if (descriptor.meta.urlValueEncoding !== URL_VALUE_ENCODINGS.POSITIONAL) {
+    return { value };
+  }
+  const token = encodeOptionToUrlToken({
+    canonicalOption: value ? BOOLEAN_CANONICAL_OPTIONS[0] : BOOLEAN_CANONICAL_OPTIONS[1],
+    optionValues: BOOLEAN_CANONICAL_OPTIONS,
+    encoding: URL_VALUE_ENCODINGS.POSITIONAL,
+  });
+  return token === undefined ? {} : { value: Number(token) };
 }
 
 function encodeTagsFilter(value: unknown, descriptor: TagsFieldDescriptor): EncodedFilterParts {
@@ -171,21 +187,25 @@ function decodeEnumFilter(
   return decodeDescriptorOption(token, descriptor);
 }
 
-function decodeBooleanFilter(inputValue: ScalarSearchInput): BooleanFilterValue | undefined {
-  if (
-    inputValue === true ||
-    inputValue === BOOLEAN_URL_VALUE.ONE ||
-    inputValue === BOOLEAN_URL_VALUE.TRUE
-  ) {
-    return true;
-  }
-  if (
-    inputValue === false ||
-    inputValue === BOOLEAN_URL_VALUE.ZERO ||
-    inputValue === BOOLEAN_URL_VALUE.FALSE
-  ) {
-    return false;
-  }
+function decodeBooleanFilter(
+  inputValue: ScalarSearchInput,
+  descriptor: BooleanFieldDescriptor,
+): BooleanFilterValue | undefined {
+  if (typeof inputValue === "boolean") return inputValue;
+  const token = coerceString(inputValue);
+  if (token === undefined || token === "") return undefined;
+  return booleanFromOption(
+    decodeOptionFromUrlToken({
+      urlToken: token,
+      optionValues: BOOLEAN_CANONICAL_OPTIONS,
+      encoding: descriptor.meta.urlValueEncoding,
+    }),
+  );
+}
+
+function booleanFromOption(option: string | undefined): BooleanFilterValue | undefined {
+  if (option === BOOLEAN_CANONICAL_OPTIONS[0]) return true;
+  if (option === BOOLEAN_CANONICAL_OPTIONS[1]) return false;
   return undefined;
 }
 

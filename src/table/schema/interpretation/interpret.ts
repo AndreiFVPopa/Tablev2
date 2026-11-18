@@ -23,6 +23,7 @@ export class SchemaInterpretationError extends Error {
 const FATAL_DIAGNOSTIC_CODES: ReadonlySet<DiagnosticCode> = new Set([
   DIAGNOSTIC_CODES.URL_VALUE_ENCODING_UNSUPPORTED,
   DIAGNOSTIC_CODES.URL_SLUG_COLLISION,
+  DIAGNOSTIC_CODES.URL_POSITION_COLLISION,
 ]);
 
 export function interpretSchema(

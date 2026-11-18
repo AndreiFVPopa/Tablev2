@@ -49,7 +49,7 @@ describe("option token encode/decode", () => {
     ).toBeUndefined();
   });
 
-  it("rejects invalid positional tokens", () => {
+  it("rejects invalid positional tokens and accepts the canonical option when it is unambiguous", () => {
     expect(
       decodeOptionFromUrlToken({
         urlToken: "0",
@@ -71,6 +71,93 @@ describe("option token encode/decode", () => {
         encoding: URL_VALUE_ENCODINGS.POSITIONAL,
       }),
     ).toBeUndefined();
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "second",
+        optionValues: positionalOptions,
+        encoding: URL_VALUE_ENCODINGS.POSITIONAL,
+      }),
+    ).toBe("second");
+  });
+
+  it("decodes positional tokens, canonical values, and normalized display labels", () => {
+    const optionValues = ["male", "female"] as const;
+    const optionLabels = { male: "Mașculin", female: "Feminin" };
+    const encoding = URL_VALUE_ENCODINGS.POSITIONAL;
+    for (const urlToken of [
+      "1",
+      "male",
+      "masculin",
+      "MASCULIN",
+      "Mașculin",
+      "%6D%61%73%63%75%6C%69%6E",
+      "Ma%C8%99culin",
+    ]) {
+      expect(
+        decodeOptionFromUrlToken({
+          urlToken,
+          optionValues,
+          encoding,
+          optionLabels,
+        }),
+      ).toBe("male");
+    }
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "feminin",
+        optionValues,
+        encoding,
+        optionLabels,
+      }),
+    ).toBe("female");
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "0",
+        optionValues,
+        encoding,
+        optionLabels,
+      }),
+    ).toBeUndefined();
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "%",
+        optionValues,
+        encoding,
+        optionLabels,
+      }),
+    ).toBeUndefined();
+    expect(
+      encodeOptionToUrlToken({
+        canonicalOption: "male",
+        optionValues,
+        encoding,
+      }),
+    ).toBe("1");
+  });
+
+  it("refuses a token that is both a position and a different canonical option", () => {
+    const ambiguousOptions = ["alpha", "1"] as const;
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "1",
+        optionValues: ambiguousOptions,
+        encoding: URL_VALUE_ENCODINGS.POSITIONAL,
+      }),
+    ).toBeUndefined();
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "2",
+        optionValues: ambiguousOptions,
+        encoding: URL_VALUE_ENCODINGS.POSITIONAL,
+      }),
+    ).toBe("1");
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "1",
+        optionValues: ["1", "alpha"],
+        encoding: URL_VALUE_ENCODINGS.POSITIONAL,
+      }),
+    ).toBe("1");
   });
 
   it("round-trips slug tokens including Romanian diacritics", () => {

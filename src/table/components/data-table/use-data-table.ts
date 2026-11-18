@@ -2,6 +2,7 @@ import { useTable } from "@tanstack/react-table";
 import { useMemo } from "react";
 
 import { buildColumnsFromDescriptors, type TableColumnDef } from "@table/lib/column-factory";
+import { DATA_MODES } from "@table/lib/state/data-mode.constants";
 import { TABLE_FEATURES } from "@table/lib/table-features";
 import { interpretSchema } from "@table/schema/index";
 import { resolveLabels } from "@table/table-labels";
@@ -27,6 +28,8 @@ export function useDataTable<TSchema extends z.ZodObject>({
   state,
   onStateChange,
   labels,
+  dataMode,
+  totalRows,
 }: UseDataTableOptions<TSchema>): UseDataTableResult<TSchema> {
   const resolvedLabels = useMemo(() => resolveLabels(labels), [labels]);
   const columns = useMemo<TableColumnDef<TableSchemaRow<TSchema>>[]>(() => {
@@ -55,6 +58,7 @@ export function useDataTable<TSchema extends z.ZodObject>({
     });
   };
 
+  const manual = dataMode === DATA_MODES.SERVER;
   const table = useTable({
     features: TABLE_FEATURES,
     data,
@@ -68,6 +72,16 @@ export function useDataTable<TSchema extends z.ZodObject>({
     onSortingChange: updateSorting,
     onColumnFiltersChange: updateColumnFilters,
     autoResetPageIndex: false,
+    ...(manual
+      ? {
+          manualPagination: true,
+          manualFiltering: true,
+          manualSorting: true,
+          ...(totalRows === null || totalRows === undefined
+            ? { pageCount: -1 }
+            : { rowCount: totalRows }),
+        }
+      : {}),
   });
 
   return { table, columns, resolvedLabels };

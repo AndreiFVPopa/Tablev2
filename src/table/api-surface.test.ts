@@ -2,6 +2,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
 
 import {
+  DATA_MODES,
   DataTable,
   DEFAULT_LABELS,
   DEFAULT_PAGE_SIZE,
@@ -17,6 +18,7 @@ import {
   type BooleanFilterValue,
   type ColumnFilterValue,
   type ComposeTableSearchValidatorOptions,
+  type DataMode,
   type DataTableProps,
   type DataTableState,
   type DateRangeFilterValue,
@@ -93,6 +95,12 @@ describe("TanStack ColumnDef generics", () => {
   });
 });
 describe("DataTable public API — type surface", () => {
+  it("exports the client and server data modes", () => {
+    expectTypeOf<DataMode>().toEqualTypeOf<(typeof DATA_MODES)[keyof typeof DATA_MODES]>();
+    expect(DATA_MODES.CLIENT).toBe("client");
+    expect(DATA_MODES.SERVER).toBe("server");
+  });
+
   it("accepts controlled props with both state and onStateChange", () => {
     const schema = z.object({ name: z.string() });
     const props: DataTableProps<typeof schema> = {

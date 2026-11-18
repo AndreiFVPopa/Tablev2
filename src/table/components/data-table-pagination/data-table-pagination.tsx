@@ -61,7 +61,7 @@ export function DataTablePagination<TData extends RowData>({
         <button
           type="button"
           onClick={pagination.onLast}
-          disabled={!pagination.canNext}
+          disabled={!pagination.canLast}
           aria-label={pagination.lastLabel}
         >
           »

@@ -6,6 +6,7 @@ import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
 import { interpretSchema } from "@table/schema/interpretation/interpret";
 import { URL_VALUE_ENCODINGS } from "@table/schema/url-value-encoding.constants";
 import { decodeOptionFromUrlToken, encodeOptionToUrlToken } from "@table/url/codec/option-encoding";
+import { composeTableSearchValidator } from "@table/url/validation/compose-search-validator";
 
 import { STUDENT_GENDER, STUDENT_GENDER_LABELS, STUDENT_TAGS } from "./students.constants";
 import { studentSchema, studentsDatasetSchema } from "./students.schema";
@@ -93,6 +94,18 @@ describe("studentSchema", () => {
     expect(gender.meta.optionLabels?.[STUDENT_GENDER.MALE]).toBe(
       STUDENT_GENDER_LABELS[STUDENT_GENDER.MALE],
     );
+    const optionLabels = gender.meta.optionLabels;
+    if (optionLabels === undefined) throw new Error("expected gender option labels");
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "masculin",
+        optionValues: gender.options,
+        encoding: gender.meta.urlValueEncoding,
+        optionLabels,
+      }),
+    ).toBe(STUDENT_GENDER.MALE);
+    const active = fields.find((field) => field.path === "active");
+    expect(active?.meta.urlValueEncoding).toBe(URL_VALUE_ENCODINGS.POSITIONAL);
     const tags = fields.find((field) => field.path === "tags");
     expect(tags?.kind).toBe(FIELD_KINDS.TAGS);
     if (tags?.kind !== FIELD_KINDS.TAGS) return;
@@ -111,5 +124,27 @@ describe("studentSchema", () => {
         encoding: tags.meta.urlValueEncoding,
       }),
     ).toBe(STUDENT_TAGS.BURSA);
+  });
+
+  it("canonicalises active and gender URL aliases through the elevi search validator", () => {
+    const validateSearch = composeTableSearchValidator(studentSchema);
+    const male = validateSearch({ gen: "masculin", active: "true", utm: "keep" });
+    expect(male.gen).toBe("masculin");
+    expect(male.active).toBe("true");
+    expect(male.utm).toBe("keep");
+    const female = validateSearch({ gen: "female", active: "false" });
+    expect(female.gen).toBe("female");
+    expect(female.active).toBe("false");
+    const positional = validateSearch({ gen: "1", active: "2" });
+    expect(positional.gen).toBe("1");
+    expect(positional.active).toBe("2");
+    const invalid = validateSearch({ gen: "nope", active: "0", utm: "keep" });
+    expect(invalid.gen).toBeUndefined();
+    expect(Object.hasOwn(invalid, "gen")).toBe(true);
+    expect(invalid.active).toBeUndefined();
+    expect(Object.hasOwn(invalid, "active")).toBe(true);
+    expect(invalid.utm).toBe("keep");
+    expect(validateSearch({}).active).toBeUndefined();
+    expect(Object.hasOwn(validateSearch({}), "active")).toBe(false);
   });
 });

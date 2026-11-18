@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 import { DIAGNOSTIC_CODES } from "../diagnostic-codes.constants";
-import { resolveOptionUrlEncoding } from "../encoding/option-encoding-config";
+import {
+  BOOLEAN_CANONICAL_OPTIONS,
+  resolveOptionUrlEncoding,
+} from "../encoding/option-encoding-config";
 import { FIELD_KINDS } from "../field-kinds.constants";
 import { unwrapSchema } from "../unwrap-schema";
 
@@ -26,6 +29,12 @@ export function buildLeafDescriptor({
     return { ...base, kind: FIELD_KINDS.NUMERIC, ...readNumberFacets(inner) };
   }
   if (inner instanceof z.ZodBoolean) {
+    pushUrlEncodingIssue({
+      base,
+      optionValues: BOOLEAN_CANONICAL_OPTIONS,
+      allowPositional: true,
+      diagnostics,
+    });
     return { ...base, kind: FIELD_KINDS.BOOLEAN };
   }
   if (inner instanceof z.ZodEnum) {
@@ -108,6 +117,7 @@ function pushUrlEncodingIssue({
     requestedEncoding: base.meta.urlValueEncoding,
     optionValues,
     allowPositional,
+    ...(base.meta.optionLabels !== undefined ? { optionLabels: base.meta.optionLabels } : {}),
     ...(base.meta.urlSlugOverrides !== undefined
       ? { slugOverrides: base.meta.urlSlugOverrides }
       : {}),
