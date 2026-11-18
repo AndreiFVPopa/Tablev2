@@ -2,13 +2,10 @@ import { z } from "zod";
 
 import { MAX_SCHEMA_WRAPPER_DEPTH } from "./wrapper-depth.constants";
 
-import type { FieldWrappers } from "./descriptors";
+import type { UnwrapResult } from "./unwrap-schema.types";
 import type * as zCore from "zod/v4/core";
 
-export interface UnwrapResult {
-  readonly inner: z.ZodType;
-  readonly wrappers: FieldWrappers;
-}
+export type { UnwrapResult } from "./unwrap-schema.types";
 
 export function unwrapSchema(schema: z.ZodType): UnwrapResult {
   let current: z.ZodType = schema;

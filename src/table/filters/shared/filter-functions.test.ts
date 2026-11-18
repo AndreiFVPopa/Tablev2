@@ -1,13 +1,22 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  booleanFilterFn,
   matchBoolean,
   matchDateRange,
   matchEnum,
   matchNumberRange,
   matchTags,
   matchText,
+  textFilterFn,
 } from "./filter-functions";
+
+import type { TableFeaturesConfig } from "../../lib/table-features";
+import type { Row } from "@tanstack/react-table";
+
+function cellRow(value: unknown): Row<TableFeaturesConfig, Record<string, unknown>> {
+  return { getValue: () => value } as unknown as Row<TableFeaturesConfig, Record<string, unknown>>;
+}
 describe("matchText", () => {
   it("passes every row when the needle is empty", () => {
     expect(matchText("Ana", "")).toBe(true);
@@ -100,5 +109,24 @@ describe("matchDateRange", () => {
   });
   it("rejects an invalid bound without matching every row", () => {
     expect(matchDateRange(nov14, { to: "not-a-date" })).toBe(false);
+    expect(matchDateRange(nov14, { from: "not-a-date" })).toBe(false);
+  });
+});
+
+describe("column filter functions", () => {
+  it("applies one text filter value to every row and ignores a non-string filter", () => {
+    const filter = textFilterFn<Record<string, unknown>>();
+    expect(filter(cellRow("Ana"), "name", "ana")).toBe(true);
+    expect(filter(cellRow("Ana"), "name", "ana")).toBe(true);
+    expect(filter(cellRow("Bogdan"), "name", "ana")).toBe(false);
+    expect(filter(cellRow("Bogdan"), "name", 12)).toBe(true);
+  });
+
+  it("treats a boolean filter of null as match-all and false as an exact cell match", () => {
+    const filter = booleanFilterFn<Record<string, unknown>>();
+    expect(filter(cellRow(true), "active", null)).toBe(true);
+    expect(filter(cellRow(false), "active", false)).toBe(true);
+    expect(filter(cellRow(true), "active", false)).toBe(false);
+    expect(filter(cellRow("yes"), "active", false)).toBe(false);
   });
 });

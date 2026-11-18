@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import { composeTableSearchValidator } from "@table/index";
-import { interpretSchema } from "@table/schema/interpret";
+import { interpretSchema } from "@table/schema/interpretation/interpret";
 
 import { StudentsPage } from "./students-page";
 import { studentSchema } from "./students.schema";

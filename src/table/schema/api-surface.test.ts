@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
 
 import {
@@ -53,13 +53,45 @@ describe("schema interpreter — public API surface", () => {
     });
     expect(issue).toBeUndefined();
     expect(toUrlSlug(diacriticOption)).toBe("bursa");
-    expect(encodeOptionToUrlToken(diacriticOption, [diacriticOption], encoding)).toBe("bursa");
-    expect(decodeOptionFromUrlToken("bursa", [diacriticOption], encoding)).toBe(diacriticOption);
+    expect(
+      encodeOptionToUrlToken({
+        canonicalOption: diacriticOption,
+        optionValues: [diacriticOption],
+        encoding,
+      }),
+    ).toBe("bursa");
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "bursa",
+        optionValues: [diacriticOption],
+        encoding,
+      }),
+    ).toBe(diacriticOption);
     const err = new SchemaInterpretationError([
       { code: DIAGNOSTIC_CODES.ROOT_NOT_OBJECT, path: "", message: "sample", hint: "fix it" },
     ]);
     expect(err).toBeInstanceOf(SchemaInterpretationError);
     expect(err.diagnostics).toHaveLength(1);
+
+    type EncodeArgs = Parameters<typeof encodeOptionToUrlToken>;
+    type DecodeArgs = Parameters<typeof decodeOptionFromUrlToken>;
+    expectTypeOf<EncodeArgs["length"]>().toEqualTypeOf<1>();
+    expectTypeOf<DecodeArgs["length"]>().toEqualTypeOf<1>();
+    expectTypeOf<EncodeArgs[0]>().toHaveProperty("canonicalOption");
+    expectTypeOf<EncodeArgs[0]>().toHaveProperty("optionValues");
+    expectTypeOf<EncodeArgs[0]>().toHaveProperty("encoding");
+    expectTypeOf<EncodeArgs[0]>().toHaveProperty("slugOverrides");
+    expectTypeOf<DecodeArgs[0]>().toHaveProperty("urlToken");
+    expectTypeOf<DecodeArgs[0]>().toHaveProperty("optionValues");
+    expectTypeOf<DecodeArgs[0]>().toHaveProperty("encoding");
+    expectTypeOf<DecodeArgs[0]>().toHaveProperty("slugOverrides");
+    function rejectPositionalOptionTokens(): void {
+      // @ts-expect-error public option helpers take one options object, not positional strings
+      encodeOptionToUrlToken(diacriticOption, [diacriticOption], encoding);
+      // @ts-expect-error public option helpers take one options object, not positional strings
+      decodeOptionFromUrlToken("bursa", [diacriticOption], encoding);
+    }
+    expect(rejectPositionalOptionTokens).toBeTypeOf("function");
   });
   it("exposes FieldKind values", () => {
     const kinds: FieldKind[] = Object.values(FIELD_KINDS);

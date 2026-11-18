@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import { DataTable } from "../components/data-table";
-import { composeTableSearchValidator } from "../url/compose-search-validator";
+import { composeTableSearchValidator } from "../url/validation/compose-search-validator";
 const PeopleSchema = z.object({
   name: z.string().meta({ title: "Nume" }),
   age: z.number().meta({ title: "Vârstă" }),

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { interpretSchema } from "@table/schema/index";
 
 import { buildColumnsFromDescriptors } from "./column-factory";
-import { compareTextValues, normalizeTextSortValue, sortText } from "./sort-functions";
+import { compareTextValues, normalizeTextSortValue, sortText } from "./sort/sort-functions";
 
 const schema = z.object({
   name: z.string(),

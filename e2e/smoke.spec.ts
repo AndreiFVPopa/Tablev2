@@ -62,6 +62,24 @@ test("elevi gender uses positional gen URL aliases", async ({ page }) => {
   await expect(page.getByLabel(/Filtrează Gen/i)).toHaveValue("female");
 });
 
+test("wide tables scroll inside the page and keep pagination in view", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.goto("/elevi?page=1&pageSize=10&sort=");
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(1);
+
+  const lastPage = page.getByRole("button", { name: "Ultima pagină" });
+  await lastPage.scrollIntoViewIfNeeded();
+  await expect(lastPage).toBeInViewport();
+
+  const noteSort = page.getByRole("button", { name: /Sortează Note/i });
+  await noteSort.focus();
+  await expect(noteSort).toBeInViewport();
+});
+
 test("elevi tags use slug URL aliases", async ({ page }) => {
   await page.goto("/elevi?page=1&pageSize=25&sort=&tags=bursa");
   await expect(page.getByRole("table")).toBeVisible();

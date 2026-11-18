@@ -11,6 +11,7 @@ import {
   createDefaultTableState,
   resolveDefaultPageSize,
   resolveLabels,
+  SearchKeyCollisionError,
   useDataTableUrlState,
   URL_VALUE_ENCODINGS,
   type BooleanFilterValue,
@@ -65,6 +66,7 @@ describe("DataTable public API — runtime values", () => {
   it("exposes the Phase-4 URL helper and hook", () => {
     expect(typeof composeTableSearchValidator).toBe("function");
     expect(typeof useDataTableUrlState).toBe("function");
+    expect(typeof SearchKeyCollisionError).toBe("function");
     const opts: ComposeTableSearchValidatorOptions = { urlNamespace: "s" };
     const hookOpts: UseDataTableUrlStateOptions = {
       schema: z.object({ name: z.string() }),
@@ -93,9 +95,9 @@ describe("TanStack ColumnDef generics", () => {
 describe("DataTable public API — type surface", () => {
   it("accepts controlled props with both state and onStateChange", () => {
     const schema = z.object({ name: z.string() });
-    const props: DataTableProps<z.infer<typeof schema>> = {
+    const props: DataTableProps<typeof schema> = {
       schema,
-      data: [],
+      data: [{ name: "Ana" }],
       state: createDefaultTableState(),
       onStateChange: () => undefined,
       pageSizes: [5, 10],
@@ -106,7 +108,7 @@ describe("DataTable public API — type surface", () => {
 
   it("accepts URL-backed props with urlNamespace and without state handlers", () => {
     const schema = z.object({ name: z.string() });
-    const props: DataTableProps<z.infer<typeof schema>> = {
+    const props: DataTableProps<typeof schema> = {
       schema,
       data: [],
       urlNamespace: "demo",
@@ -116,29 +118,29 @@ describe("DataTable public API — type surface", () => {
   });
 
   it("rejects incomplete controlled combinations at the type level", () => {
-    interface Row {
-      name: string;
-    }
-    type Props = DataTableProps<Row>;
+    const schema = z.object({ name: z.string() });
+    expect(schema.shape.name).toBeDefined();
+    type Props = DataTableProps<typeof schema>;
+    type Row = z.output<typeof schema>;
 
     interface StateOnly {
-      schema: z.ZodType;
+      schema: typeof schema;
       data: readonly Row[];
       state: DataTableState;
     }
     interface HandlerOnly {
-      schema: z.ZodType;
+      schema: typeof schema;
       data: readonly Row[];
       onStateChange: (next: DataTableState) => void;
     }
     interface Controlled {
-      schema: z.ZodType;
+      schema: typeof schema;
       data: readonly Row[];
       state: DataTableState;
       onStateChange: (next: DataTableState) => void;
     }
     interface UrlOnly {
-      schema: z.ZodType;
+      schema: typeof schema;
       data: readonly Row[];
       urlNamespace: string;
     }

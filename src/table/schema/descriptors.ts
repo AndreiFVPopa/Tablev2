@@ -4,7 +4,7 @@ import type { UrlValueEncoding } from "./url-value-encoding.constants";
 
 export { DIAGNOSTIC_CODES } from "./diagnostic-codes.constants";
 export { FIELD_KINDS } from "./field-kinds.constants";
-export type { TableFieldMeta } from "./field-meta.schema";
+export type { TableFieldMeta } from "./metadata/field-meta.schema";
 export type { DiagnosticCode, FieldKind };
 
 export interface FieldWrappers {

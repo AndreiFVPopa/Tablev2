@@ -1,13 +1,13 @@
 import { useDataTableUrlState } from "@table/hooks/use-data-table-url-state";
-import { DEFAULT_PAGE_SIZES, resolveDefaultPageSize } from "@table/lib/page-sizes";
+import { DEFAULT_PAGE_SIZES, resolveDefaultPageSize } from "@table/lib/state/page-sizes";
 
 import { DataTableControlled } from "./data-table-controlled";
 
 import type { DataTableUrlBackedProps } from "./data-table.types";
-import type { RowData } from "@tanstack/react-table";
+import type { z } from "zod";
 
-export function DataTableUrlBacked<TData extends RowData>(
-  props: DataTableUrlBackedProps<TData>,
+export function DataTableUrlBacked<TSchema extends z.ZodObject>(
+  props: DataTableUrlBackedProps<TSchema>,
 ): React.JSX.Element {
   const pageSizes = props.pageSizes ?? DEFAULT_PAGE_SIZES;
   const { state, onStateChange } = useDataTableUrlState({

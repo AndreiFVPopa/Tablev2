@@ -53,4 +53,5 @@
 .appShell__main {
   display: grid;
   gap: var(--space-6);
+  min-width: 0;
 }

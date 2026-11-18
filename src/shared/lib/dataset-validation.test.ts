@@ -10,22 +10,22 @@ const itemSchema = z.object({
 
 describe("parseDataset", () => {
   it("returns validated data and coerces date strings", () => {
-    const data = parseDataset(
-      z.array(itemSchema),
-      [{ id: "a", enrolledAt: "2024-06-01" }],
-      "elevi",
-    );
+    const data = parseDataset({
+      schema: z.array(itemSchema),
+      payload: [{ id: "a", enrolledAt: "2024-06-01" }],
+      entity: "elevi",
+    });
     expect(data).toHaveLength(1);
     expect(data[0]?.id).toBe("a");
     expect(data[0]?.enrolledAt).toBeInstanceOf(Date);
   });
 
   it("throws DatasetValidationError with entity and issues", () => {
-    expect(() => parseDataset(z.array(itemSchema), [{ id: 1 }], "elevi")).toThrow(
-      DatasetValidationError,
-    );
+    expect(() =>
+      parseDataset({ schema: z.array(itemSchema), payload: [{ id: 1 }], entity: "elevi" }),
+    ).toThrow(DatasetValidationError);
     try {
-      parseDataset(z.array(itemSchema), [{ id: 1 }], "elevi");
+      parseDataset({ schema: z.array(itemSchema), payload: [{ id: 1 }], entity: "elevi" });
     } catch (error) {
       expect(error).toBeInstanceOf(DatasetValidationError);
       if (error instanceof DatasetValidationError) {
@@ -38,14 +38,14 @@ describe("parseDataset", () => {
 
   it("does not silently drop invalid records", () => {
     expect(() =>
-      parseDataset(
-        z.array(itemSchema),
-        [
+      parseDataset({
+        schema: z.array(itemSchema),
+        payload: [
           { id: "ok", enrolledAt: "2024-01-01" },
           { id: 2, enrolledAt: "2024-01-01" },
         ],
-        "elevi",
-      ),
+        entity: "elevi",
+      }),
     ).toThrow(DatasetValidationError);
   });
 });

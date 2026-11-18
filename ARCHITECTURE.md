@@ -87,7 +87,7 @@ The hosting route composes the table's validator with its own:
 ```ts
 // Consumer route — in the demo this lives in src/app/routes, outside src/table.
 import { createFileRoute } from "@tanstack/react-router";
-import { composeTableSearchValidator } from "@/table/url/compose-search-validator";
+import { composeTableSearchValidator } from "@/table/url/validation/compose-search-validator";
 import { studentSchema } from "@features/students/schema/student.schema";
 
 export const Route = createFileRoute("/elevi")({
@@ -102,7 +102,7 @@ The table then consumes and updates that validated search with router hooks livi
 
 ### Required test coverage (Phase 4 — implemented)
 
-Covered by `src/table/url/codec.test.ts` and `src/table/hooks/use-data-table-url-state.test.tsx`:
+Covered by `src/table/url/codec/codec.test.ts` and `src/table/hooks/use-data-table-url-state.test.tsx`:
 
 1. A copied table hosted under a different TanStack Router route works unchanged.
 2. Canonical `page`, `pageSize`, and `sort` are always present in the URL, including defaults.
@@ -171,7 +171,7 @@ Invalid tokens are dropped (no crash). TanStack filter state always stores canon
 ## Portability and URL authority (Phase 6)
 
 - `src/table/` must remain copy-paste portable. Accepted peers: `react`, `@tanstack/react-table`, `@tanstack/react-router`, `zod` (+ SCSS Modules). No `@tanstack/react-query`, HTTP clients, or fixture imports.
-- Default page size is shared via `src/table/lib/page-sizes.ts` (`DEFAULT_PAGE_SIZE = 25`, `DEFAULT_PAGE_SIZES`, `resolveDefaultPageSize`) so `composeTableSearchValidator` and URL-backed `DataTable` stay aligned.
+- Default page size is shared via `src/table/lib/state/page-sizes.ts` (`DEFAULT_PAGE_SIZE = 25`, `DEFAULT_PAGE_SIZES`, `resolveDefaultPageSize`) so `composeTableSearchValidator` and URL-backed `DataTable` stay aligned.
 - URL-backed tables set `autoResetPageIndex: false` so TanStack Table cannot overwrite URL-authoritative pagination after sort/filter prop updates.
 - Controlled mode (`state` + `onStateChange`) and URL mode remain mutually exclusive (XOR props).
 - Table design tokens live in `src/table/styles/tokens.scss` (`--table-*` on `:root`). The table never imports `src/app/styles/**`. Host apps override `--table-*` CSS variables for theming.
@@ -196,7 +196,7 @@ Rules:
 - When `{ throwOnDiagnostics: true }` is passed, a `SchemaInterpretationError` is thrown with the diagnostics list. The only class in the module exists for that identity.
 - No classes beyond the error, no registries, no generic plugin system. Adding a new Zod kind is an `instanceof` branch in `buildLeafDescriptor` and a new descriptor variant — editable by anyone, auditable with one `rg instanceof src/table/schema`.
 
-The cascading test (`src/table/schema/cascading.test.ts`) proves the derivation is real: flipping `age: z.number()` to `z.string()` changes `kind`, `isSortableKind`, and `defaultFilterKind` without a single hand-written column, filter, or configuration change.
+The cascading test (`src/table/schema/interpretation/interpret.cascading.test.ts`) proves the derivation is real: flipping `age: z.number()` to `z.string()` changes `kind`, `isSortableKind`, and `defaultFilterKind` without a single hand-written column, filter, or configuration change.
 
 ### Zod v4 date-bounds limitation
 
@@ -208,7 +208,7 @@ The cascading test (`src/table/schema/cascading.test.ts`) proves the derivation 
 
 Phase 2 therefore interprets `z.date()` as `kind: "date"` without exposing `min` / `max` on the descriptor. The field is still sortable and filterable by kind, and `DateFieldDescriptor` deliberately has no `min` / `max` keys so no consumer accidentally relies on absent data.
 
-When Zod ships a public replacement (or we are explicitly approved to consume `_zod.def.checks`), the fix is one small change in `interpret.ts`'s `ZodDate` branch plus adding `min` and `max` to `DateFieldDescriptor`. The verification test `src/table/schema/interpret.test.ts` already pins the current behavior.
+When Zod ships a public replacement (or we are explicitly approved to consume `_zod.def.checks`), the fix is one small change in `interpret.ts`'s `ZodDate` branch plus adding `min` and `max` to `DateFieldDescriptor`. The verification test `src/table/schema/interpretation/interpret.test.ts` already pins the current behavior.
 
 ## DataTable component (Phase 3)
 
@@ -226,7 +226,7 @@ When Zod ships a public replacement (or we are explicitly approved to consume `_
 
 - **TanStack Table v9 (plugin API).** The project pins `@tanstack/react-table@^9.3.1`, whose `tableFeatures({...})` helper replaces v8's row-model getters. All features and row models are registered once in `src/table/lib/table-features.ts` as `TABLE_FEATURES`; every column, filter function, and sort function is typed against `TableFeaturesConfig`. The component calls `useTable({ features: TABLE_FEATURES, ... })`.
 - **Columns derive from descriptors.** `src/table/lib/column-factory.tsx` is the single bridge between the Phase-2 interpreter and the table engine. Each column gets `accessorFn = getValueAtPath(row, descriptor.segments)`, a kind-dispatched `cell` renderer (`FormattedCell → formatValue`), the right `filterFn`, and a kind-dispatched `sortFn`. `isSortableKind(descriptor.kind)` drives `enableSorting`, so tag columns have no sort control. All kinds use ascending-first (`sortDescFirst: false`) for consistent UX.
-- **Pure where practical.** `src/table/lib/format-value.ts`, `src/table/lib/get-value-at-path.ts`, and `src/table/filters/shared/filter-functions.ts` are pure modules with no React or DOM dependency; each is tested as a pure function and then wrapped by thin React adapters.
+- **Pure where practical.** `src/table/lib/format/format-value.ts`, `src/table/lib/get-value-at-path.ts`, and `src/table/filters/shared/filter-functions.ts` are pure modules with no React or DOM dependency; each is tested as a pure function and then wrapped by thin React adapters.
 - **Filter widgets per kind.** Six small components under `src/table/filters/` (`text`, `number-range`, `enum`, `boolean` as radio group, `tags` as checkbox multi-select, `date-range`). Each uses the shared `FilterComponentProps<D, V>` shape and calls `onChange(undefined)` to clear. `column-filter.tsx` dispatches on `descriptor.kind`.
 - **Labels centralised.** Every user-visible string the table renders lives in `src/table/table-labels.ts` with Romanian defaults. The component merges `labels?` over `DEFAULT_LABELS` with `resolveLabels` and publishes them through a light React Context (`src/table/components/labels-context.tsx`) so widgets read the merged bag without prop drilling.
 - **Controlled component.** The table reads from `state` and emits every change to `onStateChange`. Filter and `pageSize` transitions reset `pageIndex` to `0`. This is the same shape Phase 4's URL hooks will produce, so wrapping with router hooks is additive.

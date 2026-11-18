@@ -1,4 +1,4 @@
-import type { DataTableState } from "../lib/table-state";
+import type { DataTableState } from "../lib/state/table-state";
 import type { z } from "zod";
 
 export interface UseDataTableUrlStateOptions {

@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import studentsFixture from "@mocks/students/students.fixture.json";
 import { isPlainRecord } from "@table/lib/is-plain-record";
 import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
-import { interpretSchema } from "@table/schema/interpret";
+import { interpretSchema } from "@table/schema/interpretation/interpret";
 import { URL_VALUE_ENCODINGS } from "@table/schema/url-value-encoding.constants";
-import { decodeOptionFromUrlToken, encodeOptionToUrlToken } from "@table/url/option-encoding";
+import { decodeOptionFromUrlToken, encodeOptionToUrlToken } from "@table/url/codec/option-encoding";
 
 import { STUDENT_GENDER, STUDENT_GENDER_LABELS, STUDENT_TAGS } from "./students.constants";
 import { studentSchema, studentsDatasetSchema } from "./students.schema";
@@ -77,10 +77,18 @@ describe("studentSchema", () => {
     expect(gender.meta.urlParam).toBe("gen");
     expect(gender.meta.urlValueEncoding).toBe(URL_VALUE_ENCODINGS.POSITIONAL);
     expect(
-      encodeOptionToUrlToken(STUDENT_GENDER.MALE, gender.options, gender.meta.urlValueEncoding),
+      encodeOptionToUrlToken({
+        canonicalOption: STUDENT_GENDER.MALE,
+        optionValues: gender.options,
+        encoding: gender.meta.urlValueEncoding,
+      }),
     ).toBe("1");
     expect(
-      encodeOptionToUrlToken(STUDENT_GENDER.FEMALE, gender.options, gender.meta.urlValueEncoding),
+      encodeOptionToUrlToken({
+        canonicalOption: STUDENT_GENDER.FEMALE,
+        optionValues: gender.options,
+        encoding: gender.meta.urlValueEncoding,
+      }),
     ).toBe("2");
     expect(gender.meta.optionLabels?.[STUDENT_GENDER.MALE]).toBe(
       STUDENT_GENDER_LABELS[STUDENT_GENDER.MALE],
@@ -90,10 +98,18 @@ describe("studentSchema", () => {
     if (tags?.kind !== FIELD_KINDS.TAGS) return;
     expect(tags.meta.urlValueEncoding).toBe(URL_VALUE_ENCODINGS.SLUG);
     expect(
-      encodeOptionToUrlToken(STUDENT_TAGS.BURSA, tags.options, tags.meta.urlValueEncoding),
+      encodeOptionToUrlToken({
+        canonicalOption: STUDENT_TAGS.BURSA,
+        optionValues: tags.options,
+        encoding: tags.meta.urlValueEncoding,
+      }),
     ).toBe("bursa");
-    expect(decodeOptionFromUrlToken("bursa", tags.options, tags.meta.urlValueEncoding)).toBe(
-      STUDENT_TAGS.BURSA,
-    );
+    expect(
+      decodeOptionFromUrlToken({
+        urlToken: "bursa",
+        optionValues: tags.options,
+        encoding: tags.meta.urlValueEncoding,
+      }),
+    ).toBe(STUDENT_TAGS.BURSA);
   });
 });

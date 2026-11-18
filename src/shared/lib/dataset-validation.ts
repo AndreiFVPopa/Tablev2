@@ -1,3 +1,4 @@
+import type { ParseDatasetInput } from "./dataset-validation.types";
 import type { z } from "zod";
 
 export class DatasetValidationError extends Error {
@@ -12,7 +13,7 @@ export class DatasetValidationError extends Error {
   }
 }
 
-export function parseDataset<T>(schema: z.ZodType<T>, payload: unknown, entity: string): T {
+export function parseDataset<T>({ schema, payload, entity }: ParseDatasetInput<T>): T {
   const result = schema.safeParse(payload);
 
   if (!result.success) {
