@@ -1,9 +1,8 @@
-import { DEFAULT_PAGE_SIZES, resolveDefaultPageSize } from "../lib/page-sizes";
-import { interpretSchema } from "../schema/index";
+import { DEFAULT_PAGE_SIZES, resolveDefaultPageSize } from "../../lib/state/page-sizes";
+import { interpretSchema } from "../../schema/index";
+import { assertUniqueSearchKeys, buildTableSearchKeySet } from "../search-keys/search-keys";
 
-import { assertUniqueSearchKeys, buildTableSearchKeySet } from "./search-keys";
-
-import type { CodecOptions } from "./codec.types";
+import type { CodecOptions } from "../codec/codec.types";
 import type { ComposeTableSearchValidatorOptions } from "./compose-search-validator.types";
 import type { FieldDescriptor } from "@table/schema/descriptors";
 import type { z } from "zod";

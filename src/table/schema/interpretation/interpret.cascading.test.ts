@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { FIELD_KINDS, interpretSchema } from "../index";
+import { FIELD_KINDS, interpretSchema } from "../../index";
 
 describe("cascading schema change: age: number → age: string", () => {
   it("interprets age as numeric when defined as z.number()", () => {

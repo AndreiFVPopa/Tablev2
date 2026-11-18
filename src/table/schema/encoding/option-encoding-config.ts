@@ -1,7 +1,7 @@
 import { toUrlSlug } from "@table/lib/to-url-slug";
 
-import { DIAGNOSTIC_CODES } from "./diagnostic-codes.constants";
-import { URL_VALUE_ENCODINGS, type UrlValueEncoding } from "./url-value-encoding.constants";
+import { DIAGNOSTIC_CODES } from "../diagnostic-codes.constants";
+import { URL_VALUE_ENCODINGS, type UrlValueEncoding } from "../url-value-encoding.constants";
 
 import type { OptionUrlEncodingIssue } from "./option-encoding-config.types";
 

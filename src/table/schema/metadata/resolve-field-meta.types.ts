@@ -1,5 +1,5 @@
-import type { DiagnosticIssue } from "./descriptors";
-import type { UrlValueEncoding } from "./url-value-encoding.constants";
+import type { DiagnosticIssue } from "../descriptors";
+import type { UrlValueEncoding } from "../url-value-encoding.constants";
 import type { z } from "zod";
 
 export interface MutableFieldMeta {

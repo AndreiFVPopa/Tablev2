@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
 
-import { DIAGNOSTIC_CODES, interpretSchema, SchemaInterpretationError } from "../index";
+import { DIAGNOSTIC_CODES, interpretSchema, SchemaInterpretationError } from "../../index";
 describe("interpretSchema — diagnostics", () => {
   it("reports root-not-object when the schema root is not a z.object", () => {
     const { fields, diagnostics } = interpretSchema(z.string());

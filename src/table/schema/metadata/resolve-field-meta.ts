@@ -1,12 +1,13 @@
 import { isPlainRecord } from "@table/lib/is-plain-record";
 
-import { DIAGNOSTIC_CODES } from "./diagnostic-codes.constants";
-import { fieldPresentationMetaSchema, tableFieldMetaSchema } from "./field-meta.schema";
-import { tryUnwrap } from "./unwrap-schema";
-import { URL_VALUE_ENCODINGS } from "./url-value-encoding.constants";
-import { MAX_SCHEMA_WRAPPER_DEPTH } from "./wrapper-depth.constants";
+import { DIAGNOSTIC_CODES } from "../diagnostic-codes.constants";
+import { tryUnwrap } from "../unwrap-schema";
+import { URL_VALUE_ENCODINGS } from "../url-value-encoding.constants";
+import { MAX_SCHEMA_WRAPPER_DEPTH } from "../wrapper-depth.constants";
 
-import type { ResolvedFieldMeta } from "./descriptors";
+import { fieldPresentationMetaSchema, tableFieldMetaSchema } from "./field-meta.schema";
+
+import type { ResolvedFieldMeta } from "../descriptors";
 import type { TableFieldMeta } from "./field-meta.schema";
 import type {
   ApplyMetaLayerInput,

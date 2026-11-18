@@ -8,7 +8,7 @@ import {
   interpretSchema,
   SchemaInterpretationError,
   type FieldDescriptor,
-} from "../index";
+} from "../../index";
 function byPath(fields: readonly FieldDescriptor[], path: string): FieldDescriptor {
   const found = fields.find((f) => f.path === path);
   if (!found)

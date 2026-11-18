@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
 
-import { interpretSchema } from "../index";
+import { interpretSchema } from "../../index";
 describe("interpretSchema — metadata", () => {
   it("defaults the title to the last path segment", () => {
     const { fields } = interpretSchema(

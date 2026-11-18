@@ -1,6 +1,6 @@
 import type { TableColumnDef } from "@table/lib/column-factory";
+import type { DataTableState } from "@table/lib/state/table-state.types";
 import type { TableFeaturesConfig } from "@table/lib/table-features";
-import type { DataTableState } from "@table/lib/table-state.types";
 import type { TableLabels } from "@table/table-labels.types";
 import type { ReactTable, RowData } from "@tanstack/react-table";
 import type { z } from "zod";

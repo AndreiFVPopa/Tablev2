@@ -33,12 +33,12 @@ export {
   decodeOptionFromUrlToken,
   encodeDescriptorOption,
   encodeOptionToUrlToken,
-} from "./url/option-encoding";
+} from "./url/codec/option-encoding";
 export { DataTable, DEFAULT_PAGE_SIZES } from "./components/data-table";
 export type { DataTableProps } from "./components/data-table";
-export { createDefaultTableState } from "./lib/table-state";
-export { DEFAULT_PAGE_SIZE, resolveDefaultPageSize } from "./lib/page-sizes";
-export type { DataTableState } from "./lib/table-state";
+export { createDefaultTableState } from "./lib/state/table-state";
+export { DEFAULT_PAGE_SIZE, resolveDefaultPageSize } from "./lib/state/page-sizes";
+export type { DataTableState } from "./lib/state/table-state";
 
 export { DEFAULT_LABELS, resolveLabels } from "./table-labels";
 export type { TableLabels } from "./table-labels";
@@ -50,10 +50,10 @@ export type {
   NumberRangeFilterValue,
   TagsFilterValue,
 } from "./filters/shared/filter-values.types";
-export { composeTableSearchValidator } from "./url/compose-search-validator";
-export type { ComposeTableSearchValidatorOptions } from "./url/compose-search-validator";
-export { SearchKeyCollisionError } from "./url/search-keys";
-export type { SearchKeyCollision } from "./url/search-keys";
+export { composeTableSearchValidator } from "./url/validation/compose-search-validator";
+export type { ComposeTableSearchValidatorOptions } from "./url/validation/compose-search-validator";
+export { SearchKeyCollisionError } from "./url/search-keys/search-keys";
+export type { SearchKeyCollision } from "./url/search-keys/search-keys";
 export { useDataTableUrlState } from "./hooks/use-data-table-url-state";
 export type {
   UseDataTableUrlStateOptions,

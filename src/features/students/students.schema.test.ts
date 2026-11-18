@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import studentsFixture from "@mocks/students/students.fixture.json";
 import { isPlainRecord } from "@table/lib/is-plain-record";
 import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
-import { interpretSchema } from "@table/schema/interpret";
+import { interpretSchema } from "@table/schema/interpretation/interpret";
 import { URL_VALUE_ENCODINGS } from "@table/schema/url-value-encoding.constants";
-import { decodeOptionFromUrlToken, encodeOptionToUrlToken } from "@table/url/option-encoding";
+import { decodeOptionFromUrlToken, encodeOptionToUrlToken } from "@table/url/codec/option-encoding";
 
 import { STUDENT_GENDER, STUDENT_GENDER_LABELS, STUDENT_TAGS } from "./students.constants";
 import { studentSchema, studentsDatasetSchema } from "./students.schema";

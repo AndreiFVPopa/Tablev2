@@ -1,4 +1,4 @@
-import type { DiagnosticIssue, FieldWrappers, ResolvedFieldMeta } from "./descriptors";
+import type { DiagnosticIssue, FieldWrappers, ResolvedFieldMeta } from "../descriptors";
 import type { z } from "zod";
 
 export type LeafBase = FieldWrappers & {

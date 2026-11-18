@@ -1,4 +1,4 @@
-import { DEFAULT_PAGE_SIZES } from "@table/lib/page-sizes";
+import { DEFAULT_PAGE_SIZES } from "@table/lib/state/page-sizes";
 
 import { DataTablePagination } from "../data-table-pagination";
 import { LabelsProvider } from "../labels-context";

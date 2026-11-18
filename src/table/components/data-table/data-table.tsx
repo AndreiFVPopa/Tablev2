@@ -5,7 +5,7 @@ import { isControlledDataTableProps } from "./data-table.types";
 import type { DataTableProps } from "./data-table.types";
 import type { z } from "zod";
 
-export { DEFAULT_PAGE_SIZES } from "@table/lib/page-sizes";
+export { DEFAULT_PAGE_SIZES } from "@table/lib/state/page-sizes";
 
 export type { DataTableProps } from "./data-table.types";
 

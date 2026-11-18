@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { interpretSchema } from "../schema/index";
-import { DEFAULT_LABELS } from "../table-labels";
+import { interpretSchema } from "../../schema/index";
+import { DEFAULT_LABELS } from "../../table-labels";
 
 import { formatValue } from "./format-value";
 
-import type { FieldDescriptor, FieldKind } from "../schema/index";
+import type { FieldDescriptor, FieldKind } from "../../schema/index";
 
 const FIXTURE_SCHEMA = z.object({
   name: z.string(),

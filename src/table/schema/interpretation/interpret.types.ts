@@ -1,4 +1,4 @@
-import type { DiagnosticIssue, FieldDescriptor } from "./descriptors";
+import type { DiagnosticIssue, FieldDescriptor } from "../descriptors";
 import type { z } from "zod";
 
 export interface InterpretOptions {

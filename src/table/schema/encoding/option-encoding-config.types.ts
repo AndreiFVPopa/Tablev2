@@ -1,4 +1,4 @@
-import type { DiagnosticCode } from "./diagnostic-codes.constants";
+import type { DiagnosticCode } from "../diagnostic-codes.constants";
 
 export interface OptionUrlEncodingIssue {
   readonly code: DiagnosticCode;

@@ -9,9 +9,10 @@ import {
 import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
 import { URL_VALUE_ENCODINGS } from "@table/schema/url-value-encoding.constants";
 
+import { fieldUrlParam, filterKey } from "../search-keys/search-keys";
+
 import { BOOLEAN_URL_VALUE } from "./boolean-url.constants";
 import { decodeDescriptorOption, encodeDescriptorOption } from "./option-encoding";
-import { fieldUrlParam, filterKey } from "./search-keys";
 import { coerceFiniteNumber, coerceString } from "./search-values";
 
 import type { CodecColumnFiltersState, CodecOptions, SearchRecord } from "./codec.types";

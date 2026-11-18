@@ -2,16 +2,15 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { DataTable } from "../components/data-table";
+import { DataTable } from "../../components/data-table";
 import {
   composeTableSearchValidator,
   SearchKeyCollisionError,
   type SearchKeyCollision,
-} from "../index";
-import { createDefaultTableState } from "../lib/table-state";
-import { interpretSchema } from "../schema/index";
-
-import { createCodecOptions } from "./resolve-codec-options";
+} from "../../index";
+import { createDefaultTableState } from "../../lib/state/table-state";
+import { interpretSchema } from "../../schema/index";
+import { createCodecOptions } from "../validation/resolve-codec-options";
 
 const PAGE_SIZES = [10, 25] as const;
 

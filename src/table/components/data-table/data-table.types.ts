@@ -1,4 +1,4 @@
-import type { DataTableState } from "@table/lib/table-state";
+import type { DataTableState } from "@table/lib/state/table-state";
 import type { TableLabels } from "@table/table-labels";
 import type { z } from "zod";
 

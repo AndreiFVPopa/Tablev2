@@ -1,5 +1,5 @@
 import { useDataTableUrlState } from "@table/hooks/use-data-table-url-state";
-import { DEFAULT_PAGE_SIZES, resolveDefaultPageSize } from "@table/lib/page-sizes";
+import { DEFAULT_PAGE_SIZES, resolveDefaultPageSize } from "@table/lib/state/page-sizes";
 
 import { DataTableControlled } from "./data-table-controlled";
 

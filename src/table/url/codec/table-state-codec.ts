@@ -1,6 +1,7 @@
+import { TABLE_SEARCH_KEYS, canonicalKey } from "../search-keys/search-keys";
+
 import { writeEncodedFilters, readEncodedFilters } from "./filter-value-codec";
 import { decodePagination, encodePagination } from "./pagination-codec";
-import { TABLE_SEARCH_KEYS, canonicalKey } from "./search-keys";
 import { decodeSort, encodeSort } from "./sort-codec";
 
 import type {

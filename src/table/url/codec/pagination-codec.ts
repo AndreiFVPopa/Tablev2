@@ -1,4 +1,5 @@
-import { TABLE_SEARCH_KEYS, canonicalKey } from "./search-keys";
+import { TABLE_SEARCH_KEYS, canonicalKey } from "../search-keys/search-keys";
+
 import { toPositiveInt } from "./search-values";
 
 import type {

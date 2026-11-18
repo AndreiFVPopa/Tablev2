@@ -1,11 +1,12 @@
 import { z } from "zod";
 
-import { buildLeafDescriptor } from "./build-leaf-descriptor";
-import { DIAGNOSTIC_CODES, type DiagnosticCode } from "./diagnostic-codes.constants";
-import { resolveFieldMeta } from "./resolve-field-meta";
-import { unwrapSchema } from "./unwrap-schema";
+import { DIAGNOSTIC_CODES, type DiagnosticCode } from "../diagnostic-codes.constants";
+import { resolveFieldMeta } from "../metadata/resolve-field-meta";
+import { unwrapSchema } from "../unwrap-schema";
 
-import type { DiagnosticIssue, FieldDescriptor, InterpretationResult } from "./descriptors";
+import { buildLeafDescriptor } from "./build-leaf-descriptor";
+
+import type { DiagnosticIssue, FieldDescriptor, InterpretationResult } from "../descriptors";
 import type { DescribeFieldInput, InterpretOptions, WalkObjectInput } from "./interpret.types";
 
 export type { InterpretOptions } from "./interpret.types";

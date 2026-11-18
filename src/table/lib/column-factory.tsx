@@ -11,9 +11,9 @@ import {
 } from "@table/filters/shared/filter-functions";
 import { FIELD_KINDS } from "@table/schema/field-kinds.constants";
 
-import { formatValue } from "./format-value";
+import { formatValue } from "./format/format-value";
 import { getValueAtPath } from "./get-value-at-path";
-import { sortText } from "./sort-functions";
+import { sortText } from "./sort/sort-functions";
 
 import type { TableFeaturesConfig } from "./table-features";
 import type { FieldDescriptor, FieldKind } from "@table/schema/index";

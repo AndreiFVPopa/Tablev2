@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { interpretSchema } from "../schema/index";
+import { interpretSchema } from "../../schema/index";
+import { composeTableSearchValidator } from "../validation/compose-search-validator";
+import { createCodecOptions } from "../validation/resolve-codec-options";
+import { canonicaliseSearch, shallowEqual, stripTableKeys } from "../validation/search-canonical";
 
-import { composeTableSearchValidator } from "./compose-search-validator";
-import { createCodecOptions } from "./resolve-codec-options";
-import { canonicaliseSearch, shallowEqual, stripTableKeys } from "./search-canonical";
 import { decodeSort, encodeSort } from "./sort-codec";
 import {
   decodeTableState,

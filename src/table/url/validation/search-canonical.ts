@@ -1,6 +1,6 @@
-import { decodeTableState, encodeTableState } from "./table-state-codec";
+import { decodeTableState, encodeTableState } from "../codec/table-state-codec";
 
-import type { CodecOptions, SearchRecord } from "./codec.types";
+import type { CodecOptions, SearchRecord } from "../codec/codec.types";
 
 export function stripTableKeys(
   search: SearchRecord,

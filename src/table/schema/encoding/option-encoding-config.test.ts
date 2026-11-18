@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { DIAGNOSTIC_CODES } from "./diagnostic-codes.constants";
+import { DIAGNOSTIC_CODES } from "../diagnostic-codes.constants";
+import { URL_VALUE_ENCODINGS } from "../url-value-encoding.constants";
+
 import { resolveOptionUrlEncoding } from "./option-encoding-config";
-import { URL_VALUE_ENCODINGS } from "./url-value-encoding.constants";
 
 describe("resolveOptionUrlEncoding", () => {
   it("rejects positional encoding for tag fields without rewriting the request", () => {

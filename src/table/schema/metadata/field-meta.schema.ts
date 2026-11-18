@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { URL_VALUE_ENCODINGS } from "./url-value-encoding.constants";
+import { URL_VALUE_ENCODINGS } from "../url-value-encoding.constants";
 
 const nonEmptyTrimmedString = z.string().trim().min(1);
 

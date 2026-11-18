@@ -3,7 +3,7 @@ import { useState } from "react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { createDefaultTableState, type DataTableState } from "@table/lib/table-state";
+import { createDefaultTableState, type DataTableState } from "@table/lib/state/table-state";
 
 import { DataTable, DEFAULT_PAGE_SIZES } from "./data-table";
 

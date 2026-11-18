@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-import { DIAGNOSTIC_CODES } from "./diagnostic-codes.constants";
-import { FIELD_KINDS } from "./field-kinds.constants";
-import { resolveOptionUrlEncoding } from "./option-encoding-config";
-import { unwrapSchema } from "./unwrap-schema";
+import { DIAGNOSTIC_CODES } from "../diagnostic-codes.constants";
+import { resolveOptionUrlEncoding } from "../encoding/option-encoding-config";
+import { FIELD_KINDS } from "../field-kinds.constants";
+import { unwrapSchema } from "../unwrap-schema";
 
+import type { FieldDescriptor } from "../descriptors";
 import type {
   ArrayLeafInput,
   BuildLeafDescriptorInput,
@@ -12,7 +13,6 @@ import type {
   StringEnumOptionsInput,
   UrlEncodingIssueInput,
 } from "./build-leaf-descriptor.types";
-import type { FieldDescriptor } from "./descriptors";
 
 export function buildLeafDescriptor({
   inner,

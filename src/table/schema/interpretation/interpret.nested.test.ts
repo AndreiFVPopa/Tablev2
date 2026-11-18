@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
 
-import { DIAGNOSTIC_CODES, interpretSchema } from "../index";
+import { DIAGNOSTIC_CODES, interpretSchema } from "../../index";
 describe("interpretSchema — nested objects", () => {
   it("flattens nested objects into dot-separated paths", () => {
     const schema = z.object({
